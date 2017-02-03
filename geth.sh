@@ -1,7 +1,7 @@
 #!/bin/bash
 # >>> requires `jq` for JSON modification <<<
 
-VERBOSITY=2
+VERBOSITY=4
 
 DATA_DIR=`pwd`
 GETH_PARAMS=(--identity "FincontractsTestNet" --maxpeers 0 --rpc --rpcport "8000" --rpccorsdomain "*" --datadir $DATA_DIR --port "30303" --nodiscover --ipcapi "admin,db,eth,debug,miner,net,shh,txpool,personal,web3" --rpcapi "db,eth,net,web3" --autodag --networkid 1900 --verbosity $VERBOSITY --nat "any")
@@ -24,7 +24,7 @@ function setup {
 
 function start {
   echo "Starting geth in background"
-  nohup geth "${GETH_PARAMS[@]}" "${MINE_PARAMS[@]}" &
+  nohup geth "${GETH_PARAMS[@]}" "${MINE_PARAMS[@]}" --unlock 0 --password testnet0.pass &> geth.log&
 }
 
 if [[ $1 == "setup" ]]; then
