@@ -1,0 +1,3 @@
+[submodule "contracts/fincontracts"]
+	path = contracts/fincontracts
+	url = git@bitbucket.org:s-tikhomirov/fincontracts.git
