@@ -3,3 +3,4 @@ history
 geth.log
 geth
 keystore
+contracts/bin/
