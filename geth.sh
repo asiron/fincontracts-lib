@@ -27,6 +27,8 @@ function setup {
   jq '.alloc = { '\"${ACCOUNT}\"' : { "balance": "20000000000000000000" } }' genesis.json > tmp && mv tmp genesis.json
   geth "${GETH_PARAMS[@]}" init genesis.json
 
+  mkdir -p $CONTRACT_BIN
+
   echo "Compiling contract..."
   $SOLC_HELPER \
     --contract FincontractMarketplace \
