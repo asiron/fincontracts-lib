@@ -24,8 +24,10 @@ function setup {
   ACCOUNT="0x$(geth --datadir . --password $PASSWORD_FILE account new | cut -d "{" -f2 | cut -d "}" -f1)"
 
   echo "Allocating Ether..."
-  jq '.alloc = { '\"${ACCOUNT}\"' : { "balance": "20000000000000000000" } }' genesis.json > tmp && mv tmp genesis.json
-  geth "${GETH_PARAMS[@]}" init genesis.json
+  jq '.alloc = { '\"${ACCOUNT}\"' : { "balance": "20000000000000000000" } }' genesis.json > modified_genesis.json
+  geth "${GETH_PARAMS[@]}" init modified_genesis.json
+
+  rm modified_genesis.json
 
   mkdir -p $CONTRACT_BIN
 
