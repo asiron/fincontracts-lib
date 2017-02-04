@@ -34,14 +34,14 @@ function setup {
     --contract FincontractMarketplace \
     --gas 5100000 \
     --value 0 \
-    --output $CONTRACT_BIN/marketplace_compiled.js \
+    --output $CONTRACT_BIN/marketplace_deploy.js \
     contracts/fincontracts/marketplace.sol
 
   $SOLC_HELPER\
     --contract greeter \
-    --gas 100000 \
+    --gas 1000000 \
     --value 0 \
-    --output $CONTRACT_BIN/greeter_compiled.js \
+    --output $CONTRACT_BIN/greeter_deploy.js \
     contracts/examples/greeter.sol
 
 }
@@ -51,11 +51,26 @@ function start {
   nohup geth "${GETH_PARAMS[@]}" "${MINE_PARAMS[@]}" --unlock 0 --password $PASSWORD_FILE &> geth.log&
 }
 
+function create_instantiation_script {
+  CONTRACT=$(basename $1 | cut -d_ -f1 )
+  CONTRACT_ABI=${CONTRACT_BIN}/${CONTRACT}_deploy_abi.js
+  CONTRACT_ABI_VAR=$(cat $CONTRACT_ABI | grep -o "\w*Compiled\w*")  
+  CONTRACT_INST_VAR=$(echo ${CONTRACT_ABI_VAR} | sed 's/Compiled*//')
+  CONTRACT_ABI_VAR=${CONTRACT_ABI_VAR}.${CONTRACT_INST_VAR}.abi
+  CONTRACT_INST_SCRIPT=${CONTRACT_BIN}/${CONTRACT}_inst.js
+  echo "var ${CONTRACT_INST_VAR} = eth.contract(${CONTRACT_ABI_VAR}).at(\"${2}\");" > $CONTRACT_INST_SCRIPT
+  echo "Contract instantiation script created at ${CONTRACT_INST_SCRIPT}"
+}
+
 function deploy {
   echo "Deploying all contracts from $CONTRACT_BIN"
-  for file in $CONTRACT_BIN/*; do
-    echo "Deploying " $file
-    geth "${GETH_PARAMS[@]}" "${MINE_PARAMS[@]}" --unlock 0 --password $PASSWORD_FILE js $file
+  for FILE in $CONTRACT_BIN/*_deploy.js; do
+    
+    ADDRESS=$(geth "${GETH_PARAMS[@]}" "${MINE_PARAMS[@]}" \
+      --unlock 0 --password $PASSWORD_FILE \
+      js $FILE  | grep "Contract mined! Address" | cut -d: -f2 )
+    echo -e "\t Address is" $ADDRESS
+    create_instantiation_script $FILE $ADDRESS
   done
 }
 
@@ -71,5 +86,3 @@ elif [[ $1 == "start" ]]; then
 elif [[ $1 == "deploy" ]]; then
   deploy
 fi
-
-
