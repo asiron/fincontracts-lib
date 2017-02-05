@@ -24,4 +24,9 @@ contract greeter is mortal {
     function greet() constant returns (string) {
         return greeting;
     }
+
+    function setGreeting(string _greeting) {
+        greeting = _greeting;
+    }
+
 }

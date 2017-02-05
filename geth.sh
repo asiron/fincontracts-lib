@@ -29,6 +29,10 @@ function setup {
 
   rm modified_genesis.json
 
+  compile_contracts
+}
+
+function compile_contracts {
   mkdir -p $CONTRACT_BIN
 
   echo "Compiling contract..."
@@ -45,7 +49,6 @@ function setup {
     --value 0 \
     --output $CONTRACT_BIN/greeter_deploy.js \
     contracts/examples/greeter.sol
-
 }
 
 function start {
@@ -65,6 +68,8 @@ function create_instantiation_script {
 }
 
 function deploy {
+  compile_contracts
+
   echo "Deploying all contracts from $CONTRACT_BIN"
   for FILE in $CONTRACT_BIN/*_deploy.js; do
     
@@ -85,6 +90,8 @@ elif [[ $1 == "attach" ]]; then
   geth "${GETH_PARAMS[@]}" attach ipc://$DATA_DIR/geth.ipc
 elif [[ $1 == "start" ]]; then
   start
+elif [[ $1 == "stop" ]]; then
+  killall geth
 elif [[ $1 == "deploy" ]]; then
   deploy
 fi
