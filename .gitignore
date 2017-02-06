@@ -4,3 +4,5 @@ geth.log
 geth
 keystore
 contracts/bin/
+node_modules
+lib
