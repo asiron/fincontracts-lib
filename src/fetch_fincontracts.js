@@ -1,5 +1,6 @@
 loadScript('contracts/bin/marketplace_deploy_abi.js');
 loadScript('contracts/bin/marketplace_inst.js');
+loadScript('lib/pull_fincontract.js')
 loadScript('lib/fincontracts.js')
 loadScript('lib/utils.js')
 

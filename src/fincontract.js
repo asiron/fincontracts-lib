@@ -1,16 +1,17 @@
-class Fincontract {
-  constructor(issuer, owner, proposedOwner, dscId) {
-    this.issuer = issuer;
-    this.owner  = owner;
-    this.proposedOwner = proposedOwner;
-    this.dscId = dscId;
-  }
-}
 
 var Currency = {
   USD  : 0,
   EUR  : 1,
   SIZE : 2
+}
+
+class Fincontract {
+  constructor(issuer, owner, proposedOwner, rootDescription) {
+    this.issuer = issuer;
+    this.owner  = owner;
+    this.proposedOwner = proposedOwner;
+    this.rootDescription = rootDescription;
+  }
 }
 
 class FincNode {
@@ -121,5 +122,15 @@ class FincOneNode extends FincNode {
     arr = makeArray(Currency.SIZE, [0,0]); 
     arr[this.currency] = [1,1];
     return arr;
+  }
+}
+
+class FincZeroNode extends FincNode {
+  constructor() {
+    super(null);
+  }
+
+  eval() { 
+    return makeArray(Currency.SIZE, [0,0]); 
   }
 }
