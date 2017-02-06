@@ -25,8 +25,9 @@ contract greeter is mortal {
         return greeting;
     }
 
-    function setGreeting(string _greeting) {
+    function setGreeting(string _greeting) returns (string) {
         greeting = _greeting;
+        return greeting;
     }
 
 }
