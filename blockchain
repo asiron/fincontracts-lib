@@ -34,7 +34,7 @@ function usage {
 }
 
 function setup {
-  stop
+  killall geth
   echo "Setting up test blockchain"
   echo "Removing old blockchain data"
   rm -rf geth keystore
