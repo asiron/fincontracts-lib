@@ -34,7 +34,7 @@ Initialize submodules and pull them by running from the root of this repository
 
 ```
 git submodule init
-git submodule update --recursive --remote
+git submodule update
 ```
 
 Install all node dependecies and compile ES6 scripts to ES5 using
