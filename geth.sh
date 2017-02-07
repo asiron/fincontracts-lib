@@ -90,6 +90,8 @@ elif [[ $1 == "attach" ]]; then
   geth "${GETH_PARAMS[@]}" attach ipc://$DATA_DIR/geth.ipc
 elif [[ $1 == "start" ]]; then
   start
+elif [[ $1 == "restart" ]]; then
+  killall geth && start
 elif [[ $1 == "stop" ]]; then
   killall geth
 elif [[ $1 == "deploy" ]]; then

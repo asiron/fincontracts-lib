@@ -27,7 +27,7 @@ class FincontractFactory {
       { 
         childCount: 2, 
         builder: (desc, lChild, rChild) => 
-          new FindOrNode(lChild, rChild) 
+          new FincOrNode(lChild, rChild) 
       },
       { 
         childCount: 1, 
@@ -43,19 +43,20 @@ class FincontractFactory {
   }
 
   static PullContract(fctId) {
-    fctInfo = FincontractMarketplace.getFincontractInfo(fctId);    
-    rootDescription = FincontractFactory.PullDescription(fctInfo[3]);
-    return Fincontract(fctInfo[0], fctInfo[1], fctInfo[2], rootDescription)
+    let fctInfo = FincontractMarketplace.getFincontractInfo(fctId);    
+    let rootDescription = FincontractFactory.PullDescription(fctInfo[3]);
+    return new Fincontract(fctInfo[0], fctInfo[1], fctInfo[2], rootDescription)
   }
 
   static PullDescription(descId) {
-    var desc = FincontractMarketplace.getDescriptionInfo(descId);
-    var primitive   = FincontractFactory.PRIMITIVES[desc[0]];
-    var childrenIds = desc.slice(2, 2+primitive.childCount);
+    let desc = FincontractMarketplace.getDescriptionInfo(descId);
+    let primitive   = FincontractFactory.PRIMITIVES[desc[0]];
+    let childrenIds = desc.slice(2, 2+primitive.childCount);
     childrenIds     = childrenIds.map((id) => FincontractFactory.PullDescription(id));
-    var currentNode = primitive.builder(desc, ...childrenIds);
+    let currentNode = primitive.builder(desc, ...childrenIds);
 
-    var scale = desc[4];
+    // if scale is present, then build node for it above the current one
+    let scale = desc[4];
     return (scale != 1) ? new FincScaleNode(currentNode, scale) : currentNode;
   }
 }

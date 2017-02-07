@@ -40,8 +40,8 @@ class FincAndNode extends FincNode {
   }
   
   eval() {
-    left  = this.children[0].eval();
-    right = this.children[1].eval();
+    let left  = this.children[0].eval();
+    let right = this.children[1].eval();
     return zip(left,right).map( 
       ([iA, iB]) => [iA[0]+iB[0], iA[1]+iB[1]]
     );
@@ -54,8 +54,8 @@ class FincIfNode extends FincNode {
   }
   
   eval() {
-    left  = this.children[0].eval();
-    right = this.children[1].eval();
+    let left  = this.children[0].eval();
+    let right = this.children[1].eval();
     return zip(left,right).map( 
       ([iA, iB]) => [Math.min(iA[0], iB[0]), Math.max(iA[1], iB[1])]
     );
@@ -68,8 +68,8 @@ class FincOrNode extends FincNode {
   }
   
   eval() {
-    left  = this.children[0].eval();
-    right = this.children[1].eval();
+    let left  = this.children[0].eval();
+    let right = this.children[1].eval();
     return zip(left,right).map( 
       ([iA, iB]) => [Math.min(iA[0], iB[0]), Math.max(iA[1], iB[1])]
     );
@@ -95,7 +95,7 @@ class FincScaleObservableNode extends FincNode {
   eval() {
     return this.children.eval().map(
       (i) => {
-        var a =  zip(this.range,i).map(tupleMUL);
+        let a = flatten(cross(this.range,i)).map(tupleMUL);
         return [a.min(), a.max()];
     }); 
   }
@@ -119,7 +119,7 @@ class FincOneNode extends FincNode {
   }
 
   eval() { 
-    arr = makeArray(Currency.SIZE, [0,0]); 
+    let arr = makeArray(Currency.SIZE, [0,0]); 
     arr[this.currency] = [1,1];
     return arr;
   }
