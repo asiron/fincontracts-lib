@@ -73,7 +73,7 @@ Once you have attached to the blockchain, you should see Java Script console. Ru
 Fincontract: <fctId>
 Created for: <user_address>
 ```
-You can then use variable to `testFincontract` to view the contract. Furthemore, you can run `testFincontract.proposedOwner.eval()` to see the evaluation of the financial contract.
+You can then use variable to `testFincontract` to view the contract. Furthemore, you can run `testFincontract.rootDescription.eval` to see the evaluation of the financial contract.
 
 ### Development
 
