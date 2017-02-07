@@ -1,6 +1,7 @@
-[submodule "contracts/fincontracts"]
-	path = contracts/fincontracts
-	url = git@bitbucket.org:s-tikhomirov/fincontracts.git
 [submodule "contracts/solc_helper"]
 	path = contracts/solc_helper
 	url = git@github.com:Asiron/solidity_compiler_helper.git
+[submodule "contracts/fincontracts"]
+	path = contracts/fincontracts
+	url = git@bitbucket.org:s-tikhomirov/fincontracts.git
+	branch = devel
