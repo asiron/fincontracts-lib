@@ -5,7 +5,7 @@ Client for managing financial contracts deployed on the Ethereum blockchain.
 
 ## Getting Started
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
 
 ### Prerequisites
 
@@ -23,14 +23,14 @@ brew install node
 ```
 
 For installing `geth` follow instructions from [github.com/ethereum/go-ethereum](https://github.com/ethereum/go-ethereum/wiki/Building-Ethereum)
-Last but not least, you can install need `jq` on:
+Last but not least, you can install `jq` on:
 
 - Debian/Ubuntu `sudo apt-get install jq`
 - Mac OS X `brew install jq`
 
 ### Installing and Building
 
-Initialize submodules and pull them by running from the root of this repository
+Initialize submodules and pull them by running (from the root of this repository)
 
 ```
 git submodule init
@@ -68,7 +68,7 @@ You can also stop, start, restart and attach to the current session.
 ```
 
 ### Retrieving Financial Contracts from the blockchain and analyzing them.
-Once you have attached to the blockchain, you should see Java Script console. Run `loadScript('lib/fetch_fincontracts.js')` in order to fetch a test Fincontract. Once the transaction was mined, you should see message:
+Once you have attached to the blockchain, you should see Java Script console. Run `loadScript('lib/fetch_fincontracts.js')` in order to fetch a test Fincontract. Once the transaction was mined, you should see the message:
 ```
 Fincontract: <fctId>
 Created for: <user_address>
