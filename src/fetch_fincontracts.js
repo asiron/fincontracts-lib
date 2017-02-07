@@ -29,6 +29,6 @@ var createdByEvent = FincontractMarketplace.CreatedBy({}, function(err, result) 
     console.log("Error when creating contract: " + err);
 });
 
-FincontractMarketplace.scaleObsTest.sendTransaction(0x0, {}, logResult);
+FincontractMarketplace.scaleObsTest.sendTransaction(0x0, {gas : 10000000}, logResult);
 
 console.log('Done.');
