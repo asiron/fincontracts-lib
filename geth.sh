@@ -10,8 +10,27 @@ DATA_DIR=`pwd`
 GETH_PARAMS=(--identity "FincontractsTestNet" --maxpeers 0 --rpc --rpcport "8000" --rpccorsdomain "*" --datadir $DATA_DIR --port "30303" --nodiscover --ipcapi "admin,db,eth,debug,miner,net,shh,txpool,personal,web3" --rpcapi "db,eth,net,web3" --autodag --networkid 1900 --verbosity $VERBOSITY --nat "any")
 MINE_PARAMS=(--mine --minerthreads 1)
 
+LOGFILE=geth.log
 SOLC_HELPER=contracts/solc_helper/solc_helper
 CONTRACT_BIN=contracts/bin
+
+PROGRAMNAME=$0
+
+function usage {
+    echo "USAGE:"
+    echo -e "\t$PROGRAMNAME command"
+    echo
+    echo "COMMANDS:"
+    echo -e "\t setup  \t Sets up private blockchain chain, includes 'deploy' command"
+    echo -e "\t deploy \t Compiles and deploys contracts "
+    echo -e "\t start  \t Starts geth node in the background"
+    echo -e "\t stop   \t Stops geth node"
+    echo -e "\t restart\t Restarts geth node"
+    echo -e "\t attach \t Attaches to the running geth node"
+    echo -e "\t help   \t Displays this message"
+
+    exit 1
+}
 
 function setup {
   echo "Setting up test blockchain"
@@ -33,6 +52,7 @@ function setup {
 }
 
 function compile_contracts {
+  rm -r $CONTRACT_BIN/*
   mkdir -p $CONTRACT_BIN
 
   echo "Compiling contract..."
@@ -53,7 +73,7 @@ function compile_contracts {
 
 function start {
   echo "Starting geth in background"
-  nohup geth "${GETH_PARAMS[@]}" "${MINE_PARAMS[@]}" --unlock 0 --password $PASSWORD_FILE &> geth.log&
+  nohup geth "${GETH_PARAMS[@]}" "${MINE_PARAMS[@]}" --unlock 0 --password $PASSWORD_FILE &> $LOGFILE&
 }
 
 function create_instantiation_script {
@@ -75,7 +95,9 @@ function deploy {
     
     ADDRESS=$(geth "${GETH_PARAMS[@]}" "${MINE_PARAMS[@]}" \
       --unlock 0 --password $PASSWORD_FILE \
-      js $FILE  | grep "Contract mined! Address" | cut -d: -f2 )
+      js $FILE 2>$LOGFILE | grep "Contract mined! Address" | cut -d: -f2
+    )
+    if [ -z $ADDRESS ]; then { echo "Deploying failed. Is node running and init?"; exit 1; } fi
     echo -e "\t Address is" $ADDRESS
     create_instantiation_script $FILE $ADDRESS
   done
@@ -96,4 +118,8 @@ elif [[ $1 == "stop" ]]; then
   killall geth
 elif [[ $1 == "deploy" ]]; then
   deploy
+elif [[ $1 == "help" ]]; then
+  usage
+else
+  usage
 fi
