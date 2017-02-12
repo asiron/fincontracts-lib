@@ -6,12 +6,12 @@ VERBOSITY=4
 PASSWORD=res/testnet0
 PASSWORD_FILE=res/testnet0.pass
 
-DATA_DIR=`pwd`
+DATA_DIR=`pwd`/.geth_data/
 GETH_PARAMS=(--identity "FincontractsTestNet" --maxpeers 0 --rpc --rpcport "8000" --rpccorsdomain "*" --datadir $DATA_DIR --port "30303" --nodiscover --ipcapi "admin,db,eth,debug,miner,net,shh,txpool,personal,web3" --rpcapi "db,eth,net,web3" --autodag --networkid 1900 --verbosity $VERBOSITY --nat "any")
 MINE_PARAMS=(--mine --minerthreads 1)
 
 GENESISFILE=res/genesis.json
-LOGFILE=geth.log
+LOGFILE=${DATA_DIR}/geth.log
 SOLC_HELPER=contracts/solc_helper/solc_helper
 CONTRACT_BIN=contracts/bin
 
@@ -35,14 +35,17 @@ function usage {
 
 function setup {
   killall geth
-  echo "Setting up test blockchain"
+
   echo "Removing old blockchain data"
-  rm -rf geth keystore
+  rm -rf ${DATA_DIR}
+
+  echo "Setting up test blockchain"
+  mkdir -p ${DATA_DIR}
   geth "${GETH_PARAMS[@]}" init $GENESISFILE
 
   echo "Creating an account"
   echo $PASSWORD > $PASSWORD_FILE
-  ACCOUNT="0x$(geth --datadir . --password $PASSWORD_FILE account new | cut -d "{" -f2 | cut -d "}" -f1)"
+  ACCOUNT="0x$(geth --datadir $DATA_DIR --password $PASSWORD_FILE account new | cut -d "{" -f2 | cut -d "}" -f1)"
 
   echo "Allocating Ether..."
   jq '.alloc = { '\"${ACCOUNT}\"' : { "balance": "20000000000000000000" } }' $GENESISFILE > res/modified_genesis.json

@@ -1,8 +1,5 @@
-geth.ipc
 history
-geth.log
-geth
-keystore
 contracts/bin/
-node_modules
-lib
+node_modules/
+lib/
+.geth_data/
