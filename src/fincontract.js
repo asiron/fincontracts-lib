@@ -1,11 +1,27 @@
+//import * as u from 'utils';
 
-var Currency = {
+Array.prototype.min = function() {
+  return Math.min.apply(null, this);
+};
+
+Array.prototype.max = function() {
+  return Math.max.apply(null, this);
+};
+
+let tupleMUL = (i) => i[0] * i[1];
+let zip = (a1, a2) => a1.map((x, i) => [x, a2[i]]); 
+
+let flatten   = (arr) => arr.reduce((a,b) => a.concat(b));
+let cross     = (arr1,arr2) => arr1.map(a => arr2.map(b => [a,b]));
+let makeArray = (size, obj) => Array.apply(null, Array(size)).map(_ => obj)
+
+export const Currency = {
   USD  : 0,
   EUR  : 1,
   SIZE : 2
 }
 
-class Fincontract {
+export class Fincontract {
   constructor(issuer, owner, proposedOwner, rootDescription) {
     this.issuer = issuer;
     this.owner  = owner;
@@ -14,13 +30,13 @@ class Fincontract {
   }
 }
 
-class FincNode {
+export class FincNode {
   constructor(children) {
     this.children  = children;
   }
 }
 
-class FincTimebound extends FincNode {
+export class FincTimebound extends FincNode {
   constructor(child, lowerBound, upperBound) {
     super(child);
     this.lowerBound = lowerBound;
@@ -34,7 +50,7 @@ class FincTimebound extends FincNode {
   }
 }
 
-class FincAndNode extends FincNode {
+export class FincAndNode extends FincNode {
   constructor(leftChild, rightChild) {
     super([leftChild, rightChild]);
   }
@@ -48,7 +64,7 @@ class FincAndNode extends FincNode {
   }
 }
 
-class FincIfNode extends FincNode {
+export class FincIfNode extends FincNode {
   constructor(leftChild, rightChild) {
     super([leftChild, rightChild]);
   }
@@ -62,7 +78,7 @@ class FincIfNode extends FincNode {
   }
 }
 
-class FincOrNode extends FincNode {
+export class FincOrNode extends FincNode {
   constructor(leftChild, rightChild) {
     super([leftChild, rightChild]);
   }
@@ -76,7 +92,7 @@ class FincOrNode extends FincNode {
   }
 }
 
-class FincGiveNode extends FincNode {
+export class FincGiveNode extends FincNode {
   constructor(child) {
     super(child);
   }
@@ -86,7 +102,7 @@ class FincGiveNode extends FincNode {
   }
 }
 
-class FincScaleObservableNode extends FincNode {
+export class FincScaleObservableNode extends FincNode {
   constructor(child, range) {
     super(child);
     this.range = range;
@@ -101,7 +117,7 @@ class FincScaleObservableNode extends FincNode {
   }
 }
 
-class FincScaleNode extends FincNode {
+export class FincScaleNode extends FincNode {
   constructor(child, scale) {
     super(child);
     this.scale = scale;
@@ -112,7 +128,7 @@ class FincScaleNode extends FincNode {
   }
 }
 
-class FincOneNode extends FincNode {
+export class FincOneNode extends FincNode {
   constructor(currency) {
     super(null);
     this.currency = currency;
@@ -125,7 +141,7 @@ class FincOneNode extends FincNode {
   }
 }
 
-class FincZeroNode extends FincNode {
+export class FincZeroNode extends FincNode {
   constructor() {
     super(null);
   }

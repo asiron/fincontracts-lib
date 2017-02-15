@@ -18,11 +18,8 @@ testFincontractId = null;
 
 var createdByEvent = FincontractMarketplace.CreatedBy({}, function(err, result) {
   if (!err) {
-    console.log("Fincontract: " 
-      + result.args.fctId
-      + "\nCreated for: " 
-      + result.args.user
-    );
+    console.log("Fincontract: " + result.args.fctId 
+            + "\nCreated for: " + result.args.user);
     testFincontractId = result.args.fctId;
     testFincontract   = FincontractFactory.PullContract(result.args.fctId);
   } else

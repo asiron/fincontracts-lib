@@ -1,4 +1,10 @@
-class FincontractFactory {
+import * as finc from "./fincontract";
+
+export default class FincontractFactory {
+
+  constructor(marketplace) {
+    this.marketplace = marketplace;
+  }
 
   static get DEFAULT_GATEWAY() { return [1, 1.2]; }
 
@@ -7,56 +13,56 @@ class FincontractFactory {
       { 
         childCount: 0, 
         builder: (desc) => 
-          new FincZeroNode() 
+          new finc.FincZeroNode() 
       },
       { 
         childCount: 0, 
         builder: (desc) =>
-          new FincOneNode(desc[1])
+          new finc.FincOneNode(desc[1])
       },
       { 
         childCount: 1, 
         builder: (desc, child) => 
-          new FincGiveNode(child) 
+          new finc.FincGiveNode(child) 
       },
       { 
         childCount: 2, 
         builder: (desc, lChild, rChild) =>
-          new FincAndNode(lChild, rChild)
+          new finc.FincAndNode(lChild, rChild)
       },
       { 
         childCount: 2, 
         builder: (desc, lChild, rChild) => 
-          new FincOrNode(lChild, rChild) 
+          new finc.FincOrNode(lChild, rChild) 
       },
       { 
         childCount: 1, 
         builder: (desc, child) => 
-          new FincScaleObservableNode(child, FincontractFactory.DEFAULT_GATEWAY)
+          new finc.FincScaleObservableNode(child, FincontractFactory.DEFAULT_GATEWAY)
       },
       { 
         childCount: 2, 
         builder: (desc, lChild, rChild) => 
-          new FincIfNode(lChild, rChild)
+          new finc.FincIfNode(lChild, rChild)
       }
     ];
   }
 
-  static PullContract(fctId) {
-    let fctInfo = FincontractMarketplace.getFincontractInfo(fctId);    
-    let rootDescription = FincontractFactory.PullDescription(fctInfo[3]);
-    return new Fincontract(fctInfo[0], fctInfo[1], fctInfo[2], rootDescription)
+  pullContract(fctId) {
+    let fctInfo = this.marketplace.getFincontractInfo(fctId);    
+    let rootDescription = this.pullDescription(fctInfo[3]);
+    return new finc.Fincontract(fctInfo[0], fctInfo[1], fctInfo[2], rootDescription)
   }
 
-  static PullDescription(descId) {
-    let desc = FincontractMarketplace.getDescriptionInfo(descId);
+  pullDescription(descId) {
+    let desc = this.marketplace.getDescriptionInfo(descId);
     let primitive   = FincontractFactory.PRIMITIVES[desc[0]];
     let childrenIds = desc.slice(2, 2+primitive.childCount);
-    childrenIds     = childrenIds.map((id) => FincontractFactory.PullDescription(id));
+    childrenIds     = childrenIds.map((id) => this.pullDescription(id));
     let currentNode = primitive.builder(desc, ...childrenIds);
 
     // if scale is present, then build node for it above the current one
     let scale = desc[4];
-    return (scale != 1) ? new FincScaleNode(currentNode, scale) : currentNode;
+    return (scale != 1) ? new finc.FincScaleNode(currentNode, scale) : currentNode;
   }
 }
