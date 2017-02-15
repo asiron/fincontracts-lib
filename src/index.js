@@ -2,18 +2,13 @@
 
 const logResult = (err, result) => console.log("Error:" + err + " Result:" + result)
 
-import {
-  createModelSchema, primitive, reference, list, object, identifier, serialize, deserialize
-} from "serializr";
-
 import FincontractFactory from "./fincontract_factory";
 
 const web3 = require('web3');
 web3 = new web3(new web3.providers.HttpProvider('http://localhost:8000'));
 
 const marketplace = require('../contracts/bin/marketplace.js')
-marketplace     = marketplace.FincontractMarketplace(web3)
-
+marketplace       = marketplace.FincontractMarketplace(web3)
 
 web3.eth.defaultAccount = web3.eth.coinbase;
 

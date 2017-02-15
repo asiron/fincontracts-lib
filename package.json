@@ -13,7 +13,6 @@
     "fincli": "./lib/index.js"
   },
   "dependencies": {
-    "web3": "^0.18.2",
-    "serializr": "^1.1.9"
+    "web3": "^0.18.2"
   }
 }
