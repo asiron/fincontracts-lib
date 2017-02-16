@@ -1,6 +1,6 @@
-import * as finc from "./fincontract";
+const finc = require('./fincontract');
 
-export default class FincontractFactory {
+export class FincontractFactory {
 
   constructor(marketplace) {
     this.marketplace = marketplace;
@@ -50,6 +50,7 @@ export default class FincontractFactory {
 
   pullContract(fctId) {
     let fctInfo = this.marketplace.getFincontractInfo(fctId);    
+    if (!parseInt(fctInfo[0])) return null;
     let rootDescription = this.pullDescription(fctInfo[3]);
     return new finc.Fincontract(fctInfo[0], fctInfo[1], fctInfo[2], rootDescription)
   }
