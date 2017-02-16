@@ -1,13 +1,5 @@
 //import * as u from 'utils';
 
-Array.prototype.min = function() {
-  return Math.min.apply(null, this);
-};
-
-Array.prototype.max = function() {
-  return Math.max.apply(null, this);
-};
-
 let tupleMUL = (i) => i[0] * i[1];
 let zip = (a1, a2) => a1.map((x, i) => [x, a2[i]]); 
 
@@ -112,7 +104,7 @@ export class FincScaleObservableNode extends FincNode {
     return this.children.eval().map(
       (i) => {
         let a = flatten(cross(this.range,i)).map(tupleMUL);
-        return [a.min(), a.max()];
+        return [Math.min(...a), Math.max(...a)];
     }); 
   }
 }
