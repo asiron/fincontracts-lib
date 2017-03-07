@@ -21,12 +21,8 @@ vorpal.localStorage('fincontract-client');
 const pullIdsFromStorage = () => JSON.parse(vorpal.localStorage.getItem('fincontract-ids')) || [];
 const addFincontractIdToStorage = (id) => {
   let ids = pullIdsFromStorage();
-  vorpal.log(id);
-  vorpal.log(ids);
   if (ids.includes(id)) return false;
   ids = ids.concat([id]);
-  vorpal.log(ids);
-  vorpal.log(JSON.stringify(ids));
   vorpal.localStorage.setItem('fincontract-ids', JSON.stringify(ids));
   vorpal.log(info("id added to autocomplete"));
   return true;
@@ -60,17 +56,23 @@ const deployTestContract = _ => {
       let fincontractOwner = result.args.user;
       vorpal.log(chalk.blue("Fincontract: " + fincontractId + "\nCreated for: " + fincontractOwner));
       addFincontractIdToStorage(fincontractId);
-      createdByEvent.stopWatching();
+      //createdByEvent.stopWatching();
     } else 
       vorpal.log(error("Error when creating contract: " + err));
   });
 
-  marketplace.register.sendTransaction({gas: 4000000, gasPrice : 100}, (err, result) => {
+  marketplace.register.sendTransaction({gas: 400000, gasPrice : 100}, (err, result) => {
     if (!err) vorpal.log(info("Register transaction was sent with transaction hash:\n" + result));
   });
 
-  marketplace.complexScaleObsTest.sendTransaction(0x0, {gas: 4000000, gasPrice : 100}, (err, result) => {
-    if (!err) vorpal.log(info("ComplexScaleObsTest transaction was sent with transaction hash:\n" + result));
+  marketplace.complexScaleObsTest.sendTransaction(0x0, {gas: 400000, gasPrice : 100}, (err, result) => {
+    if (!err) vorpal.log(info("complexScaleObsTest transaction was sent with transaction hash:\n" + result));
+  });
+
+  let lowerBound = Date.now() + 120 * 1000;
+  let upperBound = Date.now() + 3600 * 1000;
+  marketplace.timeboundTest.sendTransaction(0x0, lowerBound, upperBound, {gas: 400000, gasPrice : 100}, (err, result) => {
+    if (!err) vorpal.log(info("timeboundTest transaction was sent with transaction hash:\n" + result));
   });
 }
 
@@ -110,7 +112,7 @@ vorpal
       if (args.options.eval == 'now')
         vorpal.log(warn("not yet implemented!"));
       else if (args.options.eval == 'estimate')
-        vorpal.log(testFincontract.rootDescription.eval());
+        vorpal.log(chalk.cyan(testFincontract.rootDescription.eval()));
 
       if (args.options.save)
         vorpal.log(warn("not yet implemented!"));

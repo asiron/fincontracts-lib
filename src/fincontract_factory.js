@@ -64,6 +64,12 @@ export class FincontractFactory {
 
     // if scale is present, then build node for it above the current one
     let scale = desc[4];
-    return (scale != 1) ? new finc.FincScaleNode(currentNode, scale) : currentNode;
+    currentNode = (scale != 1) ? new finc.FincScaleNode(currentNode, scale) : currentNode;
+    
+    // if lowerBound is not 0, then most likely we also have a timebound node
+    let lowerBound = desc[6], upperBound = desc[7];
+    currentNode = (lowerBound != 0) ? new finc.FincTimebound(currentNode, lowerBound, upperBound) : currentNode;
+
+    return currentNode;
   }
 }
