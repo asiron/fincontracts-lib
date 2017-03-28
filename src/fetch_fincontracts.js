@@ -11,7 +11,7 @@ eth.defaultAccount = eth.coinbase;
 
 var logResult = function(err, result) { console.log("Error:" + err + " Result:" + result) };
 
-FincontractMarketplace.register.sendTransaction({}, logResult);
+FincontractMarketplace.register.sendTransaction({gas : 4000000}, logResult);
 
 testFincontract   = null;
 testFincontractId = null;
@@ -26,6 +26,6 @@ var createdByEvent = FincontractMarketplace.CreatedBy({}, function(err, result) 
     console.log("Error when creating contract: " + err);
 });
 
-FincontractMarketplace.complexScaleObsTest.sendTransaction(0x0, {gas : 10000000}, logResult);
+FincontractMarketplace.complexScaleObsTest.call(0x0, logResult);
 
 console.log('Done.');

@@ -13,8 +13,8 @@ const info   = msg => chalk.blue(logSymbols.info + " " + msg);
 var Web3 = require('web3');
 var web3 = new Web3();
 
-var marketplacejs  = require('../contracts/bin/marketplace.js'), marketplace = null;
-const finc_factory = require("./fincontract_factory");
+const marketplacejs = require('../contracts/bin/marketplace.js'), marketplace = null;
+const fincFactory   = require("./fincontract_factory");
 
 vorpal.localStorage('fincontract-client');
 
@@ -49,30 +49,51 @@ const connectToEthereumNode = (host) => {
     vorpal.log(error('Did NOT connect, is node running at ' + url + ' ?'));
 };
 
-const deployTestContract = _ => { 
-  let createdByEvent = marketplace.CreatedBy({}, (err, result) => {
+const watchCreatedBy = () => {
+  const createdByEvent = marketplace.CreatedBy({toBlock : 'pending'});
+  createdByEvent.watch((err, res) => {
     if (!err) {
-      let fincontractId    = result.args.fctId;
-      let fincontractOwner = result.args.user;
+      let fincontractId    = res.args.fctId;
+      let fincontractOwner = res.args.user;
       vorpal.log(chalk.blue("Fincontract: " + fincontractId + "\nCreated for: " + fincontractOwner));
       addFincontractIdToStorage(fincontractId);
       //createdByEvent.stopWatching();
     } else 
       vorpal.log(error("Error when creating contract: " + err));
   });
+}
 
-  marketplace.register.sendTransaction({gas: 400000, gasPrice : 100}, (err, result) => {
-    if (!err) vorpal.log(info("Register transaction was sent with transaction hash:\n" + result));
+const watchRegistered = () => {
+  const registeredEvent = marketplace.Registered({});
+  registeredEvent.watch((err, res) => {
+    if (!err) {
+      vorpal.log(chalk.blue("Registered: " + res.args.user));
+      registeredEvent.stopWatching();
+    } else 
+      vorpal.log(error("Error when registering user: " + err));
+  });
+}
+
+const deployTestContract = _ => {
+  watchCreatedBy();
+  watchRegistered();
+
+  // marketplace.register.sendTransaction({gas: 4000000, gasPrice : 1}, (err, res) => {
+  //   if (!err) vorpal.log(info("Register transaction was sent with transaction hash:\n" + res));
+  // });
+
+  marketplace.complexScaleObsTest.sendTransaction(0x0, {gas: 4000000, gasPrice : 100}, (err, res) => {
+    if (!err) {
+      vorpal.log(info("complexScaleObsTest transaction was sent with transaction hash:\n" + res));
+    }
   });
 
-  marketplace.complexScaleObsTest.sendTransaction(0x0, {gas: 400000, gasPrice : 100}, (err, result) => {
-    if (!err) vorpal.log(info("complexScaleObsTest transaction was sent with transaction hash:\n" + result));
-  });
-
-  let lowerBound = Date.now() + 120 * 1000;
-  let upperBound = Date.now() + 3600 * 1000;
-  marketplace.timeboundTest.sendTransaction(0x0, lowerBound, upperBound, {gas: 400000, gasPrice : 100}, (err, result) => {
-    if (!err) vorpal.log(info("timeboundTest transaction was sent with transaction hash:\n" + result));
+  let lowerBound = Math.round(Date.now() / 1000 + 120);
+  let upperBound = Math.round(Date.now() / 1000 + 3600);
+  marketplace.timeboundTest.sendTransaction(0x0, lowerBound, upperBound, {gas: 4000000, gasPrice : 100}, (err, res) => {
+    if (!err) {
+      vorpal.log(info("timeboundTest transaction was sent with transaction hash:\n" + res));
+    }
   });
 }
 
@@ -100,8 +121,8 @@ vorpal
     vorpal.log(args)
     
     let id = parseBigNum(args.fincontract_id) || '0'
-    let idString = '0x'+id.toString(16)
-    let ff = new finc_factory.FincontractFactory(marketplace);
+    let idString = '0x' + id.toString(16)
+    let ff = new fincFactory.FincontractFactory(marketplace);
     let testFincontract = ff.pullContract(idString);
     
     if (testFincontract) {
@@ -125,6 +146,7 @@ vorpal
     
     cb();
   });
+
 
 vorpal
   .command('deploy')

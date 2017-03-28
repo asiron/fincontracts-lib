@@ -37,7 +37,7 @@ export class FincTimebound extends FincNode {
   
   eval() {
     return this.children.eval().map( 
-      (i) => this.upperBound < Date.now() ? [0,0] : i
+      (i) => this.upperBound < Math.round(Date.now() / 1000) ? [0,0] : i
     );
   }
 }
