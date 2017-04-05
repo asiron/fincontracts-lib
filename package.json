@@ -9,7 +9,7 @@
     "babel-preset-env": "^1.1.8"
   },
   "bin": {
-    "fincli": "./lib/index.js"
+    "fincli": "./lib/cli.js"
   },
   "dependencies": {
     "bignumber.js": "^4.0.0",

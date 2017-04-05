@@ -1,13 +1,13 @@
 #!/bin/bash
 # >>> requires `jq` for JSON modification <<<
 
-VERBOSITY=4
+VERBOSITY=3
 
 PASSWORD=res/testnet0
 PASSWORD_FILE=res/testnet0.pass
 
 DATA_DIR=`pwd`/.geth_data/
-GETH_PARAMS=(--identity "FincontractsTestNet" --maxpeers 0 --rpc --rpcport "8000" --rpccorsdomain "*" --datadir $DATA_DIR --port "30303" --nodiscover --ipcapi "admin,db,eth,debug,miner,net,shh,txpool,personal,web3" --rpcapi "db,eth,net,web3" --autodag --networkid 1900 --verbosity $VERBOSITY --nat "any")
+GETH_PARAMS=(--identity "FincontractsTestNet" --maxpeers 0 --rpc --rpcport "8000" --rpccorsdomain "*" --datadir $DATA_DIR --port "30303" --nodiscover --ipcapi "admin,db,eth,debug,miner,net,shh,txpool,personal,web3" --rpcapi "db,eth,net,web3" --networkid 1900 --verbosity $VERBOSITY --nat "none")
 MINE_PARAMS=(--mine --minerthreads 1)
 
 GENESISFILE=res/genesis.json
@@ -41,17 +41,20 @@ function setup {
 
   echo "Setting up test blockchain"
   mkdir -p ${DATA_DIR}
-  geth "${GETH_PARAMS[@]}" init $GENESISFILE
+  geth "${GETH_PARAMS[@]}" init ${GENESISFILE}
 
   echo "Creating an account"
   echo $PASSWORD > $PASSWORD_FILE
   ACCOUNT="0x$(geth --datadir $DATA_DIR --password $PASSWORD_FILE account new | cut -d "{" -f2 | cut -d "}" -f1)"
 
-  echo "Allocating Ether..."
-  jq '.alloc = { '\"${ACCOUNT}\"' : { "balance": "20000000000000000000" } }' $GENESISFILE > res/modified_genesis.json
-  geth "${GETH_PARAMS[@]}" init res/modified_genesis.json
+  # Commented for now
+  # Modifying Genesis file seems to be deprecated, we have to wait for some Ether to be mined
 
-  rm res/modified_genesis.json
+  # echo "Allocating Ether..."
+  # jq '.alloc = { '\"${ACCOUNT}\"' : { "balance": "20000000000000000000" } }' $GENESISFILE > res/modified_genesis.json
+  # geth "${GETH_PARAMS[@]}" init res/modified_genesis.json
+
+  # rm res/modified_genesis.json
 
   compile_contracts
 }
@@ -60,20 +63,36 @@ function compile_contracts {
   mkdir -p $CONTRACT_BIN
   rm -r $CONTRACT_BIN/*
 
+
   echo "Compiling contract..."
+
   $SOLC_HELPER \
     --contract FincontractMarketplace \
-    --gas 5100000 \
+    --gas 3000000 \
     --value 0 \
     --output $CONTRACT_BIN/marketplace_deploy.js \
     contracts/fincontracts/marketplace.sol
 
-  $SOLC_HELPER\
-    --contract greeter \
-    --gas 1000000 \
+  $SOLC_HELPER \
+    --contract GatewayBool \
+    --gas 3000000 \
     --value 0 \
-    --output $CONTRACT_BIN/greeter_deploy.js \
-    contracts/examples/greeter.sol
+    --output $CONTRACT_BIN/gatewaybool_deploy.js \
+    contracts/fincontracts/marketplace.sol
+
+  $SOLC_HELPER \
+    --contract GatewayInteger \
+    --gas 3000000 \
+    --value 0 \
+    --output $CONTRACT_BIN/gatewayint_deploy.js \
+    contracts/fincontracts/marketplace.sol
+
+  # $SOLC_HELPER\
+  #   --contract greeter \
+  #   --gas 1000000 \
+  #   --value 0 \
+  #   --output $CONTRACT_BIN/greeter_deploy.js \
+  #   contracts/examples/greeter.sol
 }
 
 function start {
@@ -105,12 +124,16 @@ function deploy {
   compile_contracts
 
   echo "Deploying all contracts from $CONTRACT_BIN"
-  for FILE in $CONTRACT_BIN/*_deploy.js; do    
+  for FILE in $CONTRACT_BIN/*_deploy.js; do
+    
+    # geth "${GETH_PARAMS[@]}" "${MINE_PARAMS[@]}" \
+    #   --unlock 0 --password $PASSWORD_FILE js $FILE
+
     ADDRESS=$(geth "${GETH_PARAMS[@]}" "${MINE_PARAMS[@]}" \
       --unlock 0 --password $PASSWORD_FILE \
       js $FILE 2>$LOGFILE | grep "Contract mined! Address" | cut -d: -f2
     )
-    if [ -z $ADDRESS ]; then { echo "Deploying failed. Is node running and init?"; exit 1; } fi
+    if [ -z $ADDRESS ]; then { echo "Deploying failed. Is node NOT running and init?"; exit 1; } fi
     echo -e "\t Address is" $ADDRESS
     create_instantiation_script $FILE $ADDRESS
   done
@@ -130,6 +153,7 @@ elif [[ $1 == "restart" ]]; then
 elif [[ $1 == "stop" ]]; then
   killall geth
 elif [[ $1 == "deploy" ]]; then
+  killall geth
   deploy
 elif [[ $1 == "help" ]]; then
   usage

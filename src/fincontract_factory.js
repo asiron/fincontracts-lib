@@ -1,4 +1,6 @@
+const math = require('mathjs');
 const finc = require('./fincontract');
+const parser = require('./fincontract_parser');
 
 export class FincontractFactory {
 
@@ -38,17 +40,17 @@ export class FincontractFactory {
       { 
         childCount: 1, 
         builder: (desc, child) => 
-          new finc.FincScaleObservableNode(child, FincontractFactory.DEFAULT_GATEWAY)
+          new finc.FincScaleObsNode(child, FincontractFactory.DEFAULT_GATEWAY, desc[5])
       },
       { 
         childCount: 2, 
         builder: (desc, lChild, rChild) => 
-          new finc.FincIfNode(lChild, rChild)
+          new finc.FincIfNode(lChild, rChild, desc[5])
       }
     ];
   }
 
-  pullContract(fctId) {
+  pullFincontract(fctId) {
     let fctInfo = this.marketplace.getFincontractInfo(fctId);    
     if (!parseInt(fctInfo[0])) return null;
     let rootDescription = this.pullDescription(fctInfo[3]);
