@@ -19,14 +19,17 @@ const evaluator     = require("./fincontract_evaluator");
 const serializer    = require("./fincontract_serializer");
 const parser        = require('./fincontract_parser');
 
+/* setting up local storage */
 vorpal.localStorage('fincontract-client');
+const localStorage = vorpal.localStorage;
 
-const pullIdsFromStorage = () => JSON.parse(vorpal.localStorage.getItem('fincontract-ids')) || [];
+const wipeIdsFromStorage = () => localStorage.removeItem('fincontract-ids');
+const pullIdsFromStorage = () => JSON.parse(localStorage.getItem('fincontract-ids')) || [];
 const addFincontractIdToStorage = (id) => {
   let ids = pullIdsFromStorage();
   if (ids.includes(id)) return false;
   ids = ids.concat([id]);
-  vorpal.localStorage.setItem('fincontract-ids', JSON.stringify(ids));
+  localStorage.setItem('fincontract-ids', JSON.stringify(ids));
   vorpal.log(info("id added to autocomplete"));
   return true;
 }
@@ -184,6 +187,7 @@ vorpal
 vorpal
   .command('parse <expr>')
   .validate(isNodeConnected)
+  .description('Parses a Fincontract description')
   .action((args, cb) => {
     let p = new parser.Parser();
     console.log(p.parse(args.expr));
@@ -191,8 +195,28 @@ vorpal
   })
 
 vorpal
+  .command('reset')
+  .description('Wipes out all user settings (autocomplete, etc)')
+  .action(function(args, cb){
+    this.prompt({
+      type: 'confirm',
+      name: 'continue',
+      message: 'Are you sure you want to remove all user settings?',
+    }, (result) => {
+      if (!result.continue) {
+        vorpal.log(ok('Good move.'));
+      } else {
+        vorpal.log(error('All settings were deleted!'));
+        wipeIdsFromStorage();
+      }
+      cb();
+    });
+  });
+
+vorpal
   .command('register')
   .validate(isNodeConnected)
+  .description('Registers current account')
   .action((args, cb) => {
     checkAndRegisterAccount();
     cb();
