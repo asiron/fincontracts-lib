@@ -4,7 +4,8 @@ export const Currencies = {
 }
 
 export class Fincontract {
-  constructor(issuer, owner, proposedOwner, rootDescription) {
+  constructor(id, issuer, owner, proposedOwner, rootDescription) {
+    this.id = id;
     this.issuer = issuer;
     this.owner  = owner;
     this.proposedOwner = proposedOwner;

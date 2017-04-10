@@ -1,13 +1,14 @@
 const math = require('mathjs');
 const finc = require('./fincontract');
 
+const getKey = (obj,val) => Object.keys(obj).find(key => obj[key] === val);
+const getCurrencyIndex = (name) => getKey(finc.Currencies, name)
+
 export class Parser {
   
   constructor() {}
 
   parse(expression) {
-    console.log(expression);
-    console.log(math.parse(expression));
     return this.visit(math.parse(expression));
   }
 
@@ -57,16 +58,14 @@ export class Parser {
         return new finc.FincScaleNode(child, node.args[0].value);
       }
 
-      case 'One': {
-        console.log(node);
-        return new finc.FincOneNode(node.args[0].name);
-      }
+      case 'One':
+        return new finc.FincOneNode(parseInt(getCurrencyIndex(node.args[0].name)));
 
       case 'Zero':
         return new finc.FincZeroNode();
 
       default:
-        console.log('Error');
+        vorpal.log('Error');
     }
   }
 

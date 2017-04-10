@@ -10,6 +10,15 @@ let makeArray = (size, obj) => Array.apply(null, Array(size)).map(_ => obj)
 
 var currencyCount = Object.keys(finc.Currencies).length
 
+/*
+ * TODO
+   - include evaluation now and estimation
+   - ScaleObs ranges should be applied here
+   - now should call Gateways
+   - pull currency exchange rates data and calculate single USD value 
+ *
+ */
+
 export class Evaluator {
   
   constructor() {}
@@ -17,11 +26,6 @@ export class Evaluator {
   visit(node) {
 
     switch (node.constructor) {
-      
-      case finc.FincTimeboundNode:
-        return this.visit(node.children).map(
-          (i) => node.upperBound < Math.round(Date.now() / 1000) ? [0,0] : i
-        );
 
       case finc.FincAndNode: {
         let left  = this.visit(node.children[0]);
@@ -47,8 +51,10 @@ export class Evaluator {
         );
       }
 
-      case finc.FincGiveNode:
-        return this.visit(node.children).map((i) => [-i[1], -i[0]]);
+      case finc.FincTimeboundNode:
+        return this.visit(node.children).map(
+          (i) => node.upperBound < Math.round(Date.now() / 1000) ? [0,0] : i
+        );
 
       case finc.FincScaleObservableNode:
         return this.visit(node.children).map(
@@ -61,6 +67,10 @@ export class Evaluator {
         return this.visit(node.children).map(
           (i) => [i[0]*node.scale, i[1]*node.scale]
         );
+        
+      case finc.FincGiveNode:
+        return this.visit(node.children).map((i) => [-i[1], -i[0]]);
+
 
       case finc.FincOneNode: {
         let arr = makeArray(currencyCount, [0,0]); 

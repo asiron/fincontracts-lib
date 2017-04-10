@@ -54,7 +54,7 @@ export class FincontractFactory {
     let fctInfo = this.marketplace.getFincontractInfo(fctId);    
     if (!parseInt(fctInfo[0])) return null;
     let rootDescription = this.pullDescription(fctInfo[3]);
-    return new finc.Fincontract(fctInfo[0], fctInfo[1], fctInfo[2], rootDescription)
+    return new finc.Fincontract(fctId, fctInfo[0], fctInfo[1], fctInfo[2], rootDescription)
   }
 
   pullDescription(descId) {

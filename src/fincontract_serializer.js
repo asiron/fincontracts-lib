@@ -6,6 +6,16 @@ export class Serializer {
   
   constructor() {}
 
+  serialize(fincontract) {
+    return {
+      id: compressZero(fincontract.id),
+      owner: compressZero(fincontract.owner), 
+      issuer: compressZero(fincontract.issuer), 
+      proposedOwner: compressZero(fincontract.proposedOwner),
+      description: this.visit(fincontract.rootDescription)
+    };
+  }
+
   visit(node) {
 
     switch (node.constructor) {
