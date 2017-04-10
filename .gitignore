@@ -3,3 +3,4 @@ contracts/bin/
 node_modules/
 lib/
 .geth_data/
+*xmlhttprequest*
