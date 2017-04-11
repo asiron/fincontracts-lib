@@ -20,7 +20,7 @@ const serializer    = require("./fincontract_serializer");
 const parser        = require('./fincontract_parser');
 const deployer      = require('./fincontract_deployer');
 
-/* setting up local storage hook */
+/* setting up local-storage hook */
 vorpal.localStorage('fincontract-client');
 var storage = require('./storage');
 storage = new storage.Storage(vorpal.localStorage);
@@ -37,6 +37,7 @@ const parseBigNum = (str) => {
     vorpal.log(error("Not a number!"));
   }
 }
+
 const isNodeConnected = _ => web3.isConnected() || error("Node is not connected");
 const connectToEthereumNode = (host) => {
   const url = 'http://' + host;
@@ -71,18 +72,6 @@ const checkAndRegisterAccount = () => {
   }
 };
 
-const deployTestFincontract = (name, args) => {
-  const d = new deployer.Deployer(marketplace);
-  return d.sendTransaction(name, args, 'CreatedBy', (logs) => {
-    const fctID = logs.args.fctId;
-    const owner = logs.args.user;
-    vorpal.log(chalk.blue("Fincontract: " + fctID + "\nCreated for: " + owner));
-    if (storage.addFincontractID(fctID))
-      vorpal.log(info('ID added to autocomplete!'));    
-    return fctID;
-  });
-};
-
 const deploymentTest = (index) => {
   switch (index) {
     case 1: return deployTestFincontract('simpleTest', [0x0]);
@@ -96,8 +85,21 @@ const deploymentTest = (index) => {
   }
 }
 
+const deployTestFincontract = (name, args) => {
+  const d = new deployer.Deployer(marketplace, web3);
+  return d.sendTransaction(name, args, 'CreatedBy', (logs) => {
+    const fctID = logs.args.fctId;
+    const owner = logs.args.user;
+    vorpal.log(chalk.blue("Fincontract: " + fctID + "\nCreated for: " + owner));
+    if (storage.addFincontractID(fctID))
+      vorpal.log(info('ID added to autocomplete!'));    
+    return fctID;
+  });
+};
+
 const printFincontract = (name, fincontract, detailed) => {
-  vorpal.log(info('Fincontract:' + name + '\tID:\t' + fincontract.id));
+  vorpal.log(info('Fincontract:\t' + name));
+  vorpal.log(info('ID:\t' + fincontract.id));
   if (detailed) {
     vorpal.log(info('Owner:\t\t' + fincontract.owner));
     vorpal.log(info('Issuer:\t\t' + fincontract.issuer));
@@ -105,6 +107,15 @@ const printFincontract = (name, fincontract, detailed) => {
     vorpal.log(info('Description:\t\t' + fincontract.description));    
   }
   vorpal.log('');
+}
+
+const saveFincontract = (fincontract, name) => {
+  const srz = new serializer.Serializer();
+  const serialized = srz.serialize(fincontract);
+  if (storage.addFincontract(name, serialized))
+    vorpal.log(info('Fincontract saved as \'' + name + '\''));
+  else
+    vorpal.log(warn('Fincontract with this name already exists!'));
 }
 
 /* TODO - remove at the end */
@@ -122,27 +133,28 @@ vorpal
 vorpal
   .command('create <expr>')
   .option('-i, --issue [address]', 'Issues the fincontract after deploying to given address')
-  .option('-s, --save  [name]', )
+  .option('-s, --save  [name]', 'Saves the contract after deploying to local storage')
   .description('Creates fincontract and deploys it to the blockchain')
   .validate(isNodeConnected)
   .action((args, cb) => {
     const p = new parser.Parser();
-    const d = new deployer.Deployer(marketplace);
-    const desc = p.parse(args.expr);
-    const promise = d.deploy(desc);
+    const d = new deployer.Deployer(marketplace, web3);
+
+    var promise = p.parse(args.expr)
+      .then((desc) => d.deploy(desc))
+      .catch((e) => console.log(e));
 
     if (args.options.issue) {
-      promise.then((fctID) => d.issueFincontract(fctID, args.options.issue));
+      const proposedOwner = parseAddress(args.options.issue);
+      promise = promise.then((fctID) => d.issueFincontract(fctID, proposedOwner));
     }
 
     if (args.options.save) {
       const name = args.options.save;
-      promise.then((fctID) => {
+      promise = promise.then((fctID) => {
         const ff = new fincFactory.FincontractFactory(marketplace);
         const fincontract = ff.pullFincontract(fctID);
-        const srz = new serializer.Serializer();
-        const serialized = srz.serialize(fincontract);
-        vorpal.log(serialized);
+        saveFincontract(fincontract, name);
       });
     }
     cb();
@@ -179,12 +191,7 @@ vorpal
 
       if (args.options.save) {
         const name = args.options.save;
-        const srz = new serializer.Serializer();
-        const serialized = srz.serialize(fincontract);
-        if (storage.addFincontract(name, serialized))
-          vorpal.log(info('Fincontract saved as \'' + name + '\''));
-        else
-          vorpal.log(warn('Fincontract with this name already exists!'));
+        saveFincontract(fincontract, name);
       }
 
       if (storage.addFincontractID(id))

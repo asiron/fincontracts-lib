@@ -9,7 +9,10 @@ export class Parser {
   constructor() {}
 
   parse(expression) {
-    return this.visit(math.parse(expression));
+    const that = this;
+    return new Promise((resolve, reject) => {
+      resolve(this.visit(math.parse(expression)));
+    });
   }
 
   visit(node) {

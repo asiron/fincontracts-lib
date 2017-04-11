@@ -70,7 +70,7 @@ export class FincontractFactory {
     
     // if lowerBound is not 0, then most likely we also have a timebound node
     let lowerBound = desc[6], upperBound = desc[7];
-    currentNode = (lowerBound != 0) ? new finc.FincTimebound(currentNode, lowerBound, upperBound) : currentNode;
+    currentNode = (lowerBound != 0) ? new finc.FincTimeboundNode(currentNode, lowerBound, upperBound) : currentNode;
 
     return currentNode;
   }

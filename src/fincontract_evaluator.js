@@ -56,7 +56,7 @@ export class Evaluator {
           (i) => node.upperBound < Math.round(Date.now() / 1000) ? [0,0] : i
         );
 
-      case finc.FincScaleObservableNode:
+      case finc.FincScaleObsNode:
         return this.visit(node.children).map(
           (i) => {
             let a = flatten(cross(node.range,i)).map(tupleMUL);

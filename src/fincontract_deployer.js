@@ -4,8 +4,9 @@ const GAS = 4000000;
 
 export class Deployer {
   
-  constructor(marketplace) {
+  constructor(marketplace, web3) {
     this.marketplace = marketplace;
+    this.web3 = web3;
   }
 
   deploy(description) {
@@ -19,7 +20,7 @@ export class Deployer {
   }
 
   visit(node) {
-    var that = this;
+    const that = this;
     switch (node.constructor) {
 
       case finc.FincIfNode: {
@@ -58,7 +59,7 @@ export class Deployer {
           return that.deployPrimitive('Give', [primitiveId]);
         });
 
-      case finc.FincScaleObservableNode:   
+      case finc.FincScaleObsNode:   
         return this.visit(node.children).then(primitiveId => {
           const args = [node.gatewayAddress, primitiveId];
           return that.deployPrimitive('ScaleObs', args);
@@ -84,8 +85,8 @@ export class Deployer {
   issueFincontract(fctID, proposedOwner) {
     const args = [fctID, proposedOwner];
     return this.sendTransaction('issueFor', args, 'IssuedFor', (logs) => {
-      const fctID         = res.args.fctId;
-      const proposedOwner = res.args.proposedOwner;
+      const fctID         = logs.args.fctId;
+      const proposedOwner = logs.args.proposedOwner;
       console.log("Fincontract: " + fctID + "\nIssued for: " + proposedOwner);
       return fctID;
     });
@@ -111,14 +112,19 @@ export class Deployer {
   sendTransaction(name, args, event, block) {
     const that = this;
     return new Promise((resolve, reject) => {
-      that.marketplace[name].sendTransaction(...args, {gas: GAS}, (err, tx) => {
+      const tx = that.marketplace[name].sendTransaction(...args, {gas: GAS}, (err, tx) => {
         if (!err) {
           console.log(name + ' transaction was sent. HASH: ' + tx);
+        // TODO 
+        if (!that.web3.eth.getTransaction(tx))
+          console.log(name + " " + args + " " + event + " now is null");
+
           that.watch(event, block)(tx, resolve, reject);
         } else {
           reject(Error('Error at transaction ' + name + ' with args ' + args));
         }
       });
+
     });
   }
 
