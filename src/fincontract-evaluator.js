@@ -51,24 +51,24 @@ export class Evaluator {
     switch (node.constructor) {
 
       case finc.FincAndNode: {
-        let left  = this.eval(node.children[0]);
-        let right = this.eval(node.children[1]);
+        const left  = this.eval(node.children[0]);
+        const right = this.eval(node.children[1]);
         return zip(left,right).map( 
           ([iA, iB]) => [iA[0]+iB[0], iA[1]+iB[1]]
         );
       }
 
       case finc.FincIfNode: {
-        let left  = this.eval(node.children[0]);
-        let right = this.eval(node.children[1]);
+        const left  = this.eval(node.children[0]);
+        const right = this.eval(node.children[1]);
         return zip(left,right).map( 
           ([iA, iB]) => [Math.min(iA[0], iB[0]), Math.max(iA[1], iB[1])]
         );
       } 
 
       case finc.FincOrNode: {
-        let left  = this.eval(node.children[0]);
-        let right = this.eval(node.children[1]);
+        const left  = this.eval(node.children[0]);
+        const right = this.eval(node.children[1]);
         return zip(left,right).map( 
           ([iA, iB]) => [Math.min(iA[0], iB[0]), Math.max(iA[1], iB[1])]
         );
@@ -80,10 +80,11 @@ export class Evaluator {
         );
 
       case finc.FincScaleObsNode: {
+        // ????
         const range = [1, 1.2];
         return this.eval(node.children).map(
           (i) => {
-            let a = flatten(cross(range, i)).map(tupleMUL);
+            const a = flatten(cross(range, i)).map(tupleMUL);
             return [Math.min(...a), Math.max(...a)];
         });
       }
@@ -98,7 +99,7 @@ export class Evaluator {
 
 
       case finc.FincOneNode: {
-        let arr = makeArray(curr.currencyCount, [0,0]); 
+        const arr = makeArray(curr.currencyCount, [0,0]); 
         arr[node.currency] = [1,1];
         return arr;
       }

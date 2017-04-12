@@ -1,4 +1,4 @@
-const GAS = 4000;
+const GAS = 4000000;
 
 export class Sender {
   constructor(contract, web3) {
@@ -32,7 +32,7 @@ export class Sender {
     else if (options.filter)
       listener = this.web3.eth.filter(options.filter);
     else 
-      return Promise.reject();
+      return Promise.reject('Wrong filter/event, was: ' + options.filter);
 
     return (tx, resolve, reject) => {
       listener = listener.call({fromBlock : 'latest', toBlock : 'pending'});

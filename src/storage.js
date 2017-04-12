@@ -12,7 +12,7 @@ export class Storage {
   }
 
   addToStorage(category, key, value) {
-    let objects = this.getFromStorage(category);
+    const objects = this.getFromStorage(category);
     if (objects[key]) return false;
     objects[key] = value;
     this.storage.setItem(category, JSON.stringify(objects));

@@ -19,6 +19,7 @@ const evaluator  = require("./fincontract-evaluator");
 const serializer = require("./fincontract-serializer");
 const parser     = require('./fincontract-parser');
 const deployer   = require('./fincontract-deployer');
+const examples   = require('./fincontract-examples')
 const sender     = require('./tx-sender');
 
 var marketplace  = null;
@@ -64,31 +65,6 @@ const checkAndRegisterAccount = () => {
   } else {
     vorpal.log(info("You are already registered!"));
   }
-};
-
-const deploymentTest = (index) => {
-  switch (index) {
-    case 1: return deployTestFincontract('simpleTest', [0x0]);
-    case 2: return deployTestFincontract('complexScaleObsTest', [0x0]);
-    case 3: {
-      const lowerBound = Math.round(Date.now() / 1000 + 120);
-      const upperBound = Math.round(Date.now() / 1000 + 3600);
-      return deployTestFincontract('timeboundTest', [0x0, lowerBound, upperBound]);
-    }
-    default: vorpal.log(warn('Test case does not exist!')); break;
-  }
-}
-
-const deployTestFincontract = (name, args) => {
-  const s = new sender.Sender(marketplace, web3);
-  return s.send(name, args, {event: 'CreatedBy'}, (logs) => {
-    const fctID = logs.args.fctId;
-    const owner = logs.args.user;
-    vorpal.log(chalk.blue("Fincontract: " + fctID + "\nCreated for: " + owner));
-    if (storage.addFincontractID(fctID))
-      vorpal.log(info('ID added to autocomplete!'));    
-    return fctID;
-  });
 };
 
 const printFincontract = (name, fincontract, detailed) => {
@@ -230,16 +206,24 @@ vorpal
   .validate(isNodeConnected)
   .description('Registers current account')
   .action((args, cb) => {
-    console.log(marketplace.Zero.name);
     checkAndRegisterAccount();
     cb();
   })
 
 vorpal
-  .command('deploytest <index>')
+  .command('example <index>')
   .validate(isNodeConnected)
   .action((args, cb) => {
-    deploymentTest(args.index);
+    const ex = new examples.Examples(marketplace, web3);
+    ex.runExample(args.index).then((args) => {
+      vorpal.log(chalk.blue(
+        "Fincontract: "     + args.fctId 
+        + "\nCreated for: " + args.owner
+      )); 
+      if (storage.addFincontractID(args.fctId))
+        vorpal.log(info('ID added to autocomplete!'));   
+    }).catch(e => vorpal.log(error(e)));
+
     cb();
   });
 

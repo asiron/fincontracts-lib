@@ -1,5 +1,7 @@
 const finc = require('./fincontract');
 const sender = require('./tx-sender');
+var log = require('minilog')('deployer');
+require('minilog').enable();
 
 export class Deployer {
   
@@ -86,7 +88,7 @@ export class Deployer {
     return this.sender.send('issueFor', args, {event: 'IssuedFor'}, (logs) => {
       const fctID         = logs.args.fctId;
       const proposedOwner = logs.args.proposedOwner;
-      console.log("Fincontract: " + fctID + "\nIssued for: " + proposedOwner);
+      log.info("Fincontract: " + fctID + "\nIssued for: " + proposedOwner);
       return fctID;
     });
   }
@@ -95,7 +97,7 @@ export class Deployer {
     return this.sender.send('createFincontract', [descID], {event: 'CreatedBy'}, (logs) => {
       const fctID = logs.args.fctId;
       const owner = logs.args.user;
-      console.log("Fincontract: " + fctID + "\nCreated for: " + owner);
+      log.info("Fincontract: " + fctID + "\nCreated for: " + owner);
       return fctID;
     });
   }
@@ -103,7 +105,7 @@ export class Deployer {
   deployPrimitive(name, args) {
     return this.sender.send(name, args, {event: 'PrimitiveStoredAt'}, (logs) => {
       const primitiveId = logs.args.id;
-      console.log(name + ' primitive ID: ' + primitiveId);
+      log.info(name + ' primitive ID: ' + primitiveId);
       return primitiveId;
     });
   }
