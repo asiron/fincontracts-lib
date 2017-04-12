@@ -1,5 +1,4 @@
 #!/bin/bash
-# >>> requires `jq` for JSON modification <<<
 
 VERBOSITY=3
 
@@ -63,7 +62,6 @@ function compile_contracts {
   mkdir -p $CONTRACT_BIN
   rm -r $CONTRACT_BIN/*
 
-
   echo "Compiling contract..."
 
   $SOLC_HELPER \
@@ -87,12 +85,12 @@ function compile_contracts {
     --output $CONTRACT_BIN/gatewayint_deploy.js \
     contracts/fincontracts/marketplace.sol
 
-  # $SOLC_HELPER\
-  #   --contract greeter \
-  #   --gas 1000000 \
-  #   --value 0 \
-  #   --output $CONTRACT_BIN/greeter_deploy.js \
-  #   contracts/examples/greeter.sol
+  $SOLC_HELPER\
+    --contract Gateway \
+    --gas 1000000 \
+    --value 0 \
+    --output $CONTRACT_BIN/gateway_deploy.js \
+    contracts/fincontracts/marketplace.sol
 }
 
 function start {
@@ -108,15 +106,23 @@ function create_instantiation_script {
   CONTRACT_ABI_VAR=${CONTRACT_ABI_VAR}.${CONTRACT_INST_VAR}.abi
   CONTRACT_INST_SCRIPT=${CONTRACT_BIN}/${CONTRACT}_inst.js
   CONTRACT_INST_MODULE=${CONTRACT_BIN}/${CONTRACT}.js
-  echo "var ${CONTRACT_INST_VAR} = eth.contract(${CONTRACT_ABI_VAR}).at(\"${2}\");" > $CONTRACT_INST_SCRIPT
+  CONTRACT_INST_SCRIPT_CODE="var ${CONTRACT_INST_VAR} = eth.contract(${CONTRACT_ABI_VAR})"
   
   CONTRACT_ABI="{$(cat ${CONTRACT_ABI} | cut -d{ -f2- | cut -d";" -f1)"
   CONTRACT_ABI="$(echo ${CONTRACT_ABI} | jq ".${CONTRACT_INST_VAR}.abi")"
   CONTRACT_INST_VAR="${CONTRACT_INST_VAR} = exports.${CONTRACT_INST_VAR}"
-  echo "var ${CONTRACT_INST_VAR}=function(web3){return web3.eth.contract(${CONTRACT_ABI}).at(\"${2}\");};" > $CONTRACT_INST_MODULE
+  CONTRACT_INST_MODULE_CODE="var ${CONTRACT_INST_VAR} = function(web3){return web3.eth.contract(${CONTRACT_ABI})"
 
-  echo "Contract instantiation script created at ${CONTRACT_INST_SCRIPT}"
-  echo "Contract instantiation module created at ${CONTRACT_INST_MODULE}"
+  if [ ! -z ${2} ]; then
+    CONTRACT_INST_SCRIPT_CODE="${CONTRACT_INST_SCRIPT_CODE}.at(\"${2}\")"
+    CONTRACT_INST_MODULE_CODE="${CONTRACT_INST_MODULE_CODE}.at(\"${2}\")"
+  fi
+
+  echo "${CONTRACT_INST_SCRIPT_CODE}" > $CONTRACT_INST_SCRIPT
+  echo "${CONTRACT_INST_MODULE_CODE};};" > $CONTRACT_INST_MODULE
+
+  echo "  Contract instantiation script created at ${CONTRACT_INST_SCRIPT}"
+  echo "  Contract instantiation module created at ${CONTRACT_INST_MODULE}"
 
 }
 
@@ -125,16 +131,17 @@ function deploy {
 
   echo "Deploying all contracts from $CONTRACT_BIN"
   for FILE in $CONTRACT_BIN/*_deploy.js; do
-    
-    # geth "${GETH_PARAMS[@]}" "${MINE_PARAMS[@]}" \
-    #   --unlock 0 --password $PASSWORD_FILE js $FILE
-
+    echo -e "Deploying $FILE"
     ADDRESS=$(geth "${GETH_PARAMS[@]}" "${MINE_PARAMS[@]}" \
       --unlock 0 --password $PASSWORD_FILE \
       js $FILE 2>$LOGFILE | grep "Contract mined! Address" | cut -d: -f2
     )
-    if [ -z $ADDRESS ]; then { echo "Deploying failed. Is node NOT running and init?"; exit 1; } fi
-    echo -e "\t Address is" $ADDRESS
+
+    if [ -z $ADDRESS ]; then
+      echo "  Deploying failed. Is node NOT running and init?";
+    else
+      echo "  Address is" $ADDRESS
+    fi
     create_instantiation_script $FILE $ADDRESS
   done
 }
