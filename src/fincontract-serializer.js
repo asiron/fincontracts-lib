@@ -1,4 +1,5 @@
 const finc = require('./fincontract');
+const curr = require('./currency');
 
 let compressZero = (addr) => parseInt(addr) ? addr : '0x0'
 
@@ -49,13 +50,13 @@ export class Serializer {
           + this.visit(node.children) + ')';
 
       case finc.FincOneNode:
-        return 'One(' + finc.Currencies[node.currency] + ')'
+        return 'One(' + curr.Currencies[node.currency] + ')'
 
       case finc.FincZeroNode:
         return 'Zero()'
 
-      default:
-        console.log('Error when serializing fincontract!');
+      default: throw('Error: Unknown case during serialization');
+
     }
   }
 }

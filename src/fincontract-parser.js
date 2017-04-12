@@ -1,8 +1,6 @@
 const math = require('mathjs');
 const finc = require('./fincontract');
-
-const getKey = (obj,val) => Object.keys(obj).find(key => obj[key] === val);
-const getCurrencyIndex = (name) => getKey(finc.Currencies, name)
+const curr = require('./currency');
 
 export class Parser {
   
@@ -36,7 +34,7 @@ export class Parser {
         let addr  = this.parseAddress(node);
         let left  = this.visit(node.args[1]);
         let right = this.visit(node.args[2]);
-        return new finc.FincIfNode(left, right);
+        return new finc.FincIfNode(left, right, addr);
       }
 
       case 'Or': {
@@ -53,7 +51,7 @@ export class Parser {
       case 'ScaleObs': {
         let addr  = this.parseAddress(node);
         let child = this.visit(node.args[1]);
-        return new finc.FincScaleObsNode(child, [0, 0], addr);
+        return new finc.FincScaleObsNode(child, addr);
       }
 
       case 'Scale': {
@@ -62,13 +60,15 @@ export class Parser {
       }
 
       case 'One':
-        return new finc.FincOneNode(parseInt(getCurrencyIndex(node.args[0].name)));
+        return new finc.FincOneNode(
+          parseInt(curr.getCurrencyIndex(node.args[0].name))
+        );
 
       case 'Zero':
         return new finc.FincZeroNode();
 
-      default:
-        vorpal.log('Error');
+      default: throw('Error: Unknown case during parsing');
+
     }
   }
 

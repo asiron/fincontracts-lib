@@ -17,6 +17,8 @@
     "figures": "^2.0.0",
     "log-symbols": "^1.0.2",
     "mathjs": "^3.9.1",
+    "request": "^2.81.0",
+    "request-promise-native": "^1.0.3",
     "vorpal": "^1.11.4",
     "vorpal-repl": "^1.1.8",
     "web3": "^0.18.2"

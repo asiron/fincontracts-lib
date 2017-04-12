@@ -1,10 +1,10 @@
 const finc = require('./fincontract');
-
-const GAS = 4000000;
+const sender = require('./tx-sender');
 
 export class Deployer {
   
   constructor(marketplace, web3) {
+    this.sender = new sender.Sender(marketplace, web3);
     this.marketplace = marketplace;
     this.web3 = web3;
   }
@@ -35,17 +35,17 @@ export class Deployer {
       case finc.FincAndNode: {
         const left  = this.visit(node.children[0]);
         const right = this.visit(node.children[1]);
-        return Promise.all([left, right]).then(ids => {
-          return that.deployPrimitive('And', ids);
-        });
+        return Promise.all([left, right]).then(ids =>
+          that.deployPrimitive('And', ids)
+        );
       }
 
       case finc.FincOrNode: {
         const left  = this.visit(node.children[0]);
         const right = this.visit(node.children[1]);
-        return Promise.all([left, right]).then(ids => {
-          return that.deployPrimitive('Or', ids);
-        });
+        return Promise.all([left, right]).then(ids =>
+          that.deployPrimitive('Or', ids)
+        );
       }
 
       case finc.FincTimeboundNode:
@@ -55,9 +55,9 @@ export class Deployer {
         });
 
       case finc.FincGiveNode:   
-        return this.visit(node.children).then(primitiveId => {
-          return that.deployPrimitive('Give', [primitiveId]);
-        });
+        return this.visit(node.children).then(primitiveId =>
+          that.deployPrimitive('Give', [primitiveId])
+        );
 
       case finc.FincScaleObsNode:   
         return this.visit(node.children).then(primitiveId => {
@@ -74,17 +74,16 @@ export class Deployer {
       case finc.FincOneNode:
         return this.deployPrimitive('One', [node.currency]);
 
-      case finc.FincZeroNode:
+      case finc.FincZerNode:
         return this.deployPrimitive('Zero', []);
 
-      default:
-        console.log('Error, Default case.');
+      default: throw('Error: Unknown case during primitive deployment');
     }
   }
 
   issueFincontract(fctID, proposedOwner) {
     const args = [fctID, proposedOwner];
-    return this.sendTransaction('issueFor', args, 'IssuedFor', (logs) => {
+    return this.sender.send('issueFor', args, {event: 'IssuedFor'}, (logs) => {
       const fctID         = logs.args.fctId;
       const proposedOwner = logs.args.proposedOwner;
       console.log("Fincontract: " + fctID + "\nIssued for: " + proposedOwner);
@@ -93,7 +92,7 @@ export class Deployer {
   }
 
   deployFincontract(descID) {
-    return this.sendTransaction('createFincontract', [descID], 'CreatedBy', (logs) => {
+    return this.sender.send('createFincontract', [descID], {event: 'CreatedBy'}, (logs) => {
       const fctID = logs.args.fctId;
       const owner = logs.args.user;
       console.log("Fincontract: " + fctID + "\nCreated for: " + owner);
@@ -102,48 +101,10 @@ export class Deployer {
   }
 
   deployPrimitive(name, args) {
-    return this.sendTransaction(name, args, 'PrimitiveStoredAt', (logs) => {
+    return this.sender.send(name, args, {event: 'PrimitiveStoredAt'}, (logs) => {
       const primitiveId = logs.args.id;
-      console.log('Primitive Id: ' + primitiveId);
+      console.log(name + ' primitive ID: ' + primitiveId);
       return primitiveId;
     });
   }
-
-  sendTransaction(name, args, event, block) {
-    const that = this;
-    return new Promise((resolve, reject) => {
-      const tx = that.marketplace[name].sendTransaction(...args, {gas: GAS}, (err, tx) => {
-        if (!err) {
-          console.log(name + ' transaction was sent. HASH: ' + tx);
-        // TODO 
-        if (!that.web3.eth.getTransaction(tx))
-          console.log(name + " " + args + " " + event + " now is null");
-
-          that.watch(event, block)(tx, resolve, reject);
-        } else {
-          reject(Error('Error at transaction ' + name + ' with args ' + args));
-        }
-      });
-
-    });
-  }
-
-  watch(event, block) {
-    const that = this;
-    return (tx, resolve, reject) => {
-      const listener = that.marketplace[event]({fromBlock : 'latest', toBlock : 'pending'});
-      listener.watch((err, logs) => {
-        if (err) {
-          reject(Error('Error during event ' + event + ' : ' + err));
-          return;
-        }
-        if (logs.transactionHash == tx) {
-          listener.stopWatching();
-          const yielded = block(logs);
-          resolve(yielded);
-        }
-      });
-    }
-  }
-
 }

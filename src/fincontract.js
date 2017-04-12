@@ -1,8 +1,3 @@
-export const Currencies = {
-  0 : 'USD', 
-  1 : 'EUR'
-}
-
 export class Fincontract {
   constructor(id, issuer, owner, proposedOwner, rootDescription) {
     this.id = id;
@@ -15,11 +10,7 @@ export class Fincontract {
 
 export class FincNode {
   constructor(children) {
-    this.children  = children;
-  }
-
-  accept(visitor) {
-    return visitor.visit(this);
+    this.children = children;
   }
 }
 
@@ -56,11 +47,9 @@ export class FincGiveNode extends FincNode {
   }
 }
 
-/* move this.range to evaluator ??? */
 export class FincScaleObsNode extends FincNode {
-  constructor(child, range, gatewayAddress) {
+  constructor(child, gatewayAddress) {
     super(child);
-    this.range = range;
     this.gatewayAddress = gatewayAddress;
   }
 }

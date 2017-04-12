@@ -13,12 +13,15 @@ const info   = msg => chalk.blue(logSymbols.info + " " + msg);
 var Web3 = require('web3');
 var web3 = new Web3();
 
-const marketplacejs = require('../contracts/bin/marketplace.js'), marketplace = null;
-const fincFactory   = require("./fincontract_factory");
-const evaluator     = require("./fincontract_evaluator");
-const serializer    = require("./fincontract_serializer");
-const parser        = require('./fincontract_parser');
-const deployer      = require('./fincontract_deployer');
+const marketplacejs = require('../contracts/bin/marketplace.js');
+const fetcher    = require("./fincontract-fetcher");
+const evaluator  = require("./fincontract-evaluator");
+const serializer = require("./fincontract-serializer");
+const parser     = require('./fincontract-parser');
+const deployer   = require('./fincontract-deployer');
+const sender     = require('./tx-sender');
+
+var marketplace  = null;
 
 /* setting up local-storage hook */
 vorpal.localStorage('fincontract-client');
@@ -52,20 +55,11 @@ const connectToEthereumNode = (host) => {
 };
 
 const checkAndRegisterAccount = () => {
-
   if (!marketplace.isRegistered.call()) {
-    const registeredEvent = marketplace.Registered({});
-    registeredEvent.watch((err, res) => {
-      if (!err) {
-        vorpal.log(chalk.blue("Registered account: " + res.args.user));
-        registeredEvent.stopWatching();
-      } else 
-        vorpal.log(error("Error when registering user: " + err));
-    });  
-    marketplace.register.sendTransaction({gas: 4000000, gasPrice : 100}, (err, res) => {
-      if (!err) {
-        vorpal.log(info("Register transaction was sent with transaction hash:\n" + res));
-      }
+    const s = new sender.Sender(marketplace, web3);
+    s.send('register', [], {event: 'Registered'}, (logs) => {
+      vorpal.log(chalk.blue("Registered account: " + logs.args.user));
+      return logs.args.user;
     });
   } else {
     vorpal.log(info("You are already registered!"));
@@ -86,8 +80,8 @@ const deploymentTest = (index) => {
 }
 
 const deployTestFincontract = (name, args) => {
-  const d = new deployer.Deployer(marketplace, web3);
-  return d.sendTransaction(name, args, 'CreatedBy', (logs) => {
+  const s = new sender.Sender(marketplace, web3);
+  return s.send(name, args, {event: 'CreatedBy'}, (logs) => {
     const fctID = logs.args.fctId;
     const owner = logs.args.user;
     vorpal.log(chalk.blue("Fincontract: " + fctID + "\nCreated for: " + owner));
@@ -140,25 +134,23 @@ vorpal
     const p = new parser.Parser();
     const d = new deployer.Deployer(marketplace, web3);
 
-    var promise = p.parse(args.expr)
-      .then((desc) => d.deploy(desc))
-      .catch((e) => console.log(e));
-
+    let promise = p.parse(args.expr);
     if (args.options.issue) {
       const proposedOwner = parseAddress(args.options.issue);
-      promise = promise.then((fctID) => d.issueFincontract(fctID, proposedOwner));
+      promise = promise.then(desc => d.issue(desc, proposedOwner));
+    } else {
+      promise = promise.then(desc => d.deploy(desc));
     }
 
     if (args.options.save) {
       const name = args.options.save;
-      promise = promise.then((fctID) => {
-        const ff = new fincFactory.FincontractFactory(marketplace);
-        const fincontract = ff.pullFincontract(fctID);
-        saveFincontract(fincontract, name);
-      });
+      const f = new fetcher.Fetcher(marketplace);
+      promise = promise.then(fctID => f.pullFincontract(fctID))
+        .then(fincontract => saveFincontract(fincontract, name))
     }
+    promise.catch(e => vorpal.log(error(e)));
     cb();
-  })
+  });
 
 vorpal
   .command('pull <fincontract_id>')
@@ -173,20 +165,19 @@ vorpal
     vorpal.log(args)
     
     const id = parseAddress(args.fincontract_id);
-    const ff = new fincFactory.FincontractFactory(marketplace);
-    const fincontract = ff.pullFincontract(id);
-    
-    if (fincontract) {
+    const f = new fetcher.Fetcher(marketplace);
+
+    f.pullFincontract(id).then(fincontract => {
+      
       vorpal.log(fincontract);
       vorpal.log(parseInt(fincontract.issuer));
       vorpal.log(fincontract.rootDescription);
 
-      if (args.options.eval == 'now')
-        vorpal.log(warn("not yet implemented!"));
-      else if (args.options.eval == 'estimate') {
-        const evalVisitor = new evaluator.Evaluator();
-        const evaled = fincontract.rootDescription.accept(evalVisitor);
-        vorpal.log(chalk.cyan(evaled));
+      if (!args.options.eval) {
+        const type = args.options.eval;
+        const e = new evaluator.Evaluator(marketplace, web3);
+        const evaled = e.evaluate(fincontract, {type: type});
+        vorpal.log(chalk.cyan(evaled));        
       }
 
       if (args.options.save) {
@@ -197,10 +188,8 @@ vorpal
       if (storage.addFincontractID(id))
         vorpal.log(info('ID added to autocomplete!'));
 
-    } else {
-      vorpal.log(error("Contract was not found!"));
-    }
-    
+    }).catch(e => vorpal.log(error(e)));
+
     cb();
   });
 
@@ -215,7 +204,7 @@ vorpal
       printFincontract(name, fincontracts[name], args.options.detail);
     }
     cb();
-  })
+  });
 
 vorpal
   .command('reset')
@@ -241,6 +230,7 @@ vorpal
   .validate(isNodeConnected)
   .description('Registers current account')
   .action((args, cb) => {
+    console.log(marketplace.Zero.name);
     checkAndRegisterAccount();
     cb();
   })
