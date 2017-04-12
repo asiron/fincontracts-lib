@@ -32,22 +32,20 @@ export class Evaluator {
     const that = this;
     const root = fincontract.rootDescription;
 
-    if (options.type == 'now') {
+    if (options.method == 'now') {
 
-      this.updateAllGateways(root)
+      return this.updateAllGateways(root)
         .then(vs => that.eval(root, null));
 
-    } else if (options.type == 'estimate') {
+    } else if (options.method == 'estimate') {
       //IF nodes are now OR nodes
       //apply gateway ranges
-      return this.eval(root, null);
+      return Promise.resolve(this.eval(root, null));
 
-    } else {
-      //Handle non-existant type;
-    }
+    } else return Promise.reject('Wrong evaluation method')
   }
 
-  eval(node, type) {
+  eval(node, method) {
 
     switch (node.constructor) {
 

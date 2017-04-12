@@ -148,10 +148,12 @@ vorpal
       vorpal.log(fincontract);
 
       if (args.options.eval) {
-        const type = args.options.eval;
+        const method = args.options.eval;
         const e = new evaluator.Evaluator(marketplace, web3);
-        const evaled = e.evaluate(fincontract, {type: type});
-        vorpal.log(chalk.cyan(evaled));        
+        e.evaluate(fincontract, {method: method})
+          .then((res) => vorpal.log(chalk.cyan(res)))
+          .catch(e => vorpal.log(error(e)));
+         
       }
 
       if (args.options.save) {
@@ -210,15 +212,13 @@ vorpal
 
 vorpal
   .command('example <index>')
+  .autocomplete(examples.AllExamples)
   .validate(isNodeConnected)
+  .description('Deploys one of the examples from marketplace smart contract')
   .action((args, cb) => {
     const ex = new examples.Examples(marketplace, web3);
-    ex.runExample(args.index).then((args) => {
-      vorpal.log(chalk.blue(
-        "Fincontract: "     + args.fctId 
-        + "\nCreated for: " + args.owner
-      )); 
-      if (storage.addFincontractID(args.fctId))
+    ex.runExample(args.index).then(fctID => {
+      if (storage.addFincontractID(fctID))
         vorpal.log(info('ID added to autocomplete!'));   
     }).catch(e => vorpal.log(error(e)));
 
