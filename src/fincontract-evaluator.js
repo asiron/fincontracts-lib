@@ -1,6 +1,8 @@
 const finc = require('./fincontract');
 const curr = require('./currency');
 const sender = require('./tx-sender');
+var log = require('minilog')('eval');
+require('minilog').enable();
 
 const gatewayjs = require('../contracts/bin/gateway.js');
 
@@ -36,7 +38,6 @@ export class Evaluator {
         .then(vs => that.eval(root, null));
 
     } else if (options.type == 'estimate') {
-
       //IF nodes are now OR nodes
       //apply gateway ranges
       return this.eval(root, null);
@@ -108,13 +109,12 @@ export class Evaluator {
         return makeArray(curr.currencyCount, [0,0]);
 
       default: throw('Error: Unknown case during evaluation');
-
     }
   }
 
   updateAllGateways(node) {
     return Promise.all(this.visitGateway(node))
-      .catch(e => console.log(e));
+      .catch(e => log.error(e));
   }
 
   visitGateway(node) {
@@ -137,7 +137,7 @@ export class Evaluator {
     const gateway = gatewayjs.Gateway(this.web3).at(address);
     const s = new sender.Sender(gateway, this.web3);
     return [s.send('update', [], {filter: 'latest'}, (logs) =>
-      console.log('Finished!') 
+      log.info('Finished!') 
     )];
   }
 

@@ -1,6 +1,6 @@
 const finc = require('./fincontract');
 const sender = require('./tx-sender');
-var log = require('minilog')('deployer');
+var log = require('minilog')('deploy');
 require('minilog').enable();
 
 export class Deployer {
@@ -76,7 +76,7 @@ export class Deployer {
       case finc.FincOneNode:
         return this.deployPrimitive('One', [node.currency]);
 
-      case finc.FincZerNode:
+      case finc.FincZeroNode:
         return this.deployPrimitive('Zero', []);
 
       default: throw('Error: Unknown case during primitive deployment');
@@ -88,7 +88,8 @@ export class Deployer {
     return this.sender.send('issueFor', args, {event: 'IssuedFor'}, (logs) => {
       const fctID         = logs.args.fctId;
       const proposedOwner = logs.args.proposedOwner;
-      log.info("Fincontract: " + fctID + "\nIssued for: " + proposedOwner);
+      log.info("Fincontract: " + fctID);
+      log.info("Issued for: " + proposedOwner);
       return fctID;
     });
   }
@@ -97,7 +98,8 @@ export class Deployer {
     return this.sender.send('createFincontract', [descID], {event: 'CreatedBy'}, (logs) => {
       const fctID = logs.args.fctId;
       const owner = logs.args.user;
-      log.info("Fincontract: " + fctID + "\nCreated for: " + owner);
+      log.info("Fincontract: " + fctID);
+      log.info("Created for: " + owner);
       return fctID;
     });
   }

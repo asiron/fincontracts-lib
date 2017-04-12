@@ -146,10 +146,8 @@ vorpal
     f.pullFincontract(id).then(fincontract => {
       
       vorpal.log(fincontract);
-      vorpal.log(parseInt(fincontract.issuer));
-      vorpal.log(fincontract.rootDescription);
 
-      if (!args.options.eval) {
+      if (args.options.eval) {
         const type = args.options.eval;
         const e = new evaluator.Evaluator(marketplace, web3);
         const evaled = e.evaluate(fincontract, {type: type});
