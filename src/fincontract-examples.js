@@ -9,7 +9,8 @@ export const AllExamples = [
   'simpleTest', 
   'complexScaleObsTest', 
   'timeboundTest', 
-  'gateways'
+  'setGateways',
+  'resetGateways'
 ];
 
 export class Examples {
@@ -31,14 +32,18 @@ export class Examples {
       const upperBound = Math.round(Date.now() / 1000 + 3600);
       return this.deployExample('timeboundTest', [0x0, lowerBound, upperBound]);
     } 
-    else if (name == 'gateways') 
+    else if (['setGateways','resetGateways'].includes(name)) 
     {
-      const gatewayint  = gatewayintjs.GatewayInteger(this.web3);
-      const gatewaybool = gatewaybooljs.GatewayBool(this.web3);
-      const p1 = this.deploy('setGatewayI', [gatewayint.address],
-        {filter: 'latest'}, logs => log.info('gatewayI set to GatewayInt'));
-      const p2 = this.deploy('setGatewayB', [gatewaybool.address],
-        {filter: 'latest'}, logs => log.info('gatewayB set to GatewayBool'));
+      const gatewayint  = (name == 'setGateways')
+        ? gatewayintjs.GatewayInteger(this.web3).address : 0;
+      
+      const gatewaybool = (name == 'setGateways')
+        ? gatewaybooljs.GatewayBool(this.web3).address : 0;
+      
+      const p1 = this.deploy('setGatewayI', [gatewayint],
+        {filter: 'latest'}, logs => log.info('gatewayI set to ' + gatewayint));
+      const p2 = this.deploy('setGatewayB', [gatewaybool],
+        {filter: 'latest'}, logs => log.info('gatewayB set to ' + gatewaybool));
       return Promise.all([p1, p2]);
     } 
     else 

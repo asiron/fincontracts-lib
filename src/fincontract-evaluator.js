@@ -33,19 +33,21 @@ export class Evaluator {
     const root = fincontract.rootDescription;
 
     if (options.method == 'now') {
-
-      return this.updateAllGateways(root)
-        .then(vs => that.eval(root, null));
+      return this.updateAllGateways(root).then(
+        Promise.resolve(that.eval(root, options.method))
+      );
 
     } else if (options.method == 'estimate') {
       //IF nodes are now OR nodes
       //apply gateway ranges
-      return Promise.resolve(this.eval(root, null));
-
+      return Promise.resolve(this.eval(root, options.method));
+    
     } else return Promise.reject('Wrong evaluation method')
   }
 
   eval(node, method) {
+
+
 
     switch (node.constructor) {
 
@@ -119,24 +121,25 @@ export class Evaluator {
     if (node.children instanceof Array) {
       const left  = this.visitGateway(node.children[0]);
       const right = this.visitGateway(node.children[1]);
-      const self  = this.updateGateway(node.gatewayAddress);
+      const self  = this.updateGateway(node.gatewayAddress, 'If');
       return [...left, ...right, self];
     } else if (node.children) {
       const child = this.visitGateway(node.children);
-      const self  = this.updateGateway(node.gatewayAddress);
+      const self  = this.updateGateway(node.gatewayAddress, 'ScaleObs');
       return [...child, self];
     } else {
       return [Promise.resolve()];
     }
   }
 
-  updateGateway(address) {
+  updateGateway(address, type) {
     if (!address) return [Promise.resolve()];
     const gateway = gatewayjs.Gateway(this.web3).at(address);
+    log.log(gateway);
     const s = new sender.Sender(gateway, this.web3);
-    return [s.send('update', [], {filter: 'latest'}, (logs) =>
-      log.info('Finished!') 
-    )];
+    const promise = s.send('update', [], {filter: 'latest'}, (logs) =>
+      log.info('Finished! ' + type)).catch(e => log.warn(e));
+    return [promise];
   }
 
   callGateway(address) {

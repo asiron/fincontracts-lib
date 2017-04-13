@@ -16,7 +16,7 @@ export class Sender {
         if (!err) {
           log.info(name + ' transaction was sent. HASH: ' + tx);
           if (!that.web3.eth.getTransaction(tx)) {
-            log.warn(tx + " transaction was lost! Resending...");
+            log.warn('Transaction was lost! HASH: ' + tx);
             return executor(resolve, reject);          
           }
           that.watch(eventOptions, block)(tx, resolve, reject);

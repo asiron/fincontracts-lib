@@ -143,28 +143,29 @@ vorpal
     const id = parseAddress(args.fincontract_id);
     const f = new fetcher.Fetcher(marketplace);
 
-    f.pullFincontract(id).then(fincontract => {
-      
-      vorpal.log(fincontract);
-
-      if (args.options.eval) {
-        const method = args.options.eval;
-        const e = new evaluator.Evaluator(marketplace, web3);
-        e.evaluate(fincontract, {method: method})
-          .then((res) => vorpal.log(chalk.cyan(res)))
-          .catch(e => vorpal.log(error(e)));
-         
-      }
-
-      if (args.options.save) {
-        const name = args.options.save;
-        saveFincontract(fincontract, name);
-      }
-
-      if (storage.addFincontractID(id))
-        vorpal.log(info('ID added to autocomplete!'));
-
-    }).catch(e => vorpal.log(error(e)));
+    f.pullFincontract(id)
+      .then(fincontract => {
+        if (storage.addFincontractID(id))
+          vorpal.log(info('ID added to autocomplete!'));
+        return Promise.resolve(fincontract);
+      })
+      .then(fincontract => {
+        if (args.options.save) {
+          const name = args.options.save;
+          saveFincontract(fincontract, name);
+        }
+        return Promise.resolve(fincontract);
+      })
+      .then(fincontract => {
+        if (args.options.eval) {
+          const method = args.options.eval;
+          const e = new evaluator.Evaluator(marketplace, web3);
+          return e.evaluate(fincontract, {method: method})
+            .catch(e => vorpal.log(error(e)))
+            .then((res) => vorpal.log(chalk.cyan(res)))
+        }
+      })
+      .catch(e => vorpal.log(error(e)));
 
     cb();
   });
