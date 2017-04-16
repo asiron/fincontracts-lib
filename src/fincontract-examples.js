@@ -39,15 +39,19 @@ export class Examples {
       
       const gatewaybool = (name == 'setGateways')
         ? gatewaybooljs.GatewayBool(this.web3).address : 0;
-      
-      const p1 = this.deploy('setGatewayI', [gatewayint],
-        {filter: 'latest'}, logs => log.info('gatewayI set to ' + gatewayint));
-      const p2 = this.deploy('setGatewayB', [gatewaybool],
-        {filter: 'latest'}, logs => log.info('gatewayB set to ' + gatewaybool));
-      return Promise.all([p1, p2]);
+
+      return this.setGateways(gatewayint, gatewaybool);
     } 
     else 
       return Promise.reject('Example does not exist!');
+  }
+
+  setGateways(gatewayint, gatewaybool) {
+    const p1 = this.deploy('setGatewayI', [gatewayint],
+      {filter: 'latest'}, logs => log.info('gatewayI set to ' + gatewayint));
+    const p2 = this.deploy('setGatewayB', [gatewaybool],
+      {filter: 'latest'}, logs => log.info('gatewayB set to ' + gatewaybool));
+    return Promise.all([p1, p2]);
   }
 
   deployExample(name, args) {
