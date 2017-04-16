@@ -7,10 +7,7 @@ export class Parser {
   constructor() {}
 
   parse(expression) {
-    const that = this;
-    return new Promise((resolve, reject) => {
-      resolve(this.visit(math.parse(expression)));
-    });
+    return Promise.resolve(this.visit(math.parse(expression)));
   }
 
   visit(node) {
