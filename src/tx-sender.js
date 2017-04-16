@@ -36,10 +36,10 @@ export class Sender {
       listener = listener.call({fromBlock:'latest', toBlock:'pending'});
       predicate = (tx, logs) => logs.transactionHash == tx;
     } else if (options.filter) {
-      listener = this.web3.eth.filter('latest');
+      listener = this.web3.eth.filter(options.filter);
       predicate = (tx, logs) => this.wasTransactionIncluded(logs, tx);
     } else 
-      return Promise.reject('Wrong filter/event, was: ' + options.filter);
+      return Promise.reject('Wrong filter/event, was: ' + options);
 
     return (tx, resolve, reject) => {
       listener.watch((err, logs) => {
