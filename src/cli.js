@@ -161,7 +161,6 @@ vorpal
           const method = args.options.eval;
           const e = new evaluator.Evaluator(marketplace, web3);
           return e.evaluate(fincontract, {method: method})
-            .catch(e => vorpal.log(error(e)))
             .then((res) => vorpal.log(chalk.cyan(res)))
         }
       })

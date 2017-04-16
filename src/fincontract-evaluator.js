@@ -135,7 +135,6 @@ export class Evaluator {
   updateGateway(address, type) {
     if (!address) return [Promise.resolve()];
     const gateway = gatewayjs.Gateway(this.web3).at(address);
-    log.log(gateway);
     const s = new sender.Sender(gateway, this.web3);
     const sent = s.send('update', [], {filter: 'latest'}, (logs) =>
       log.info('Finished! ' + type)).catch(e => log.warn(e));
