@@ -1,23 +1,23 @@
 import Sender from './tx-sender';
-import { Visitor, CollectingVisitor } from './fincontract-visitor';
+import {Visitor} from './fincontract-visitor';
 
-var log = require('minilog')('desc-deploy');
+const log = require('minilog')('desc-deploy');
 require('minilog').enable();
 
 export default class DescriptionDeployer extends Visitor {
-  
+
   constructor(marketplace, web3) {
-  	super();
+    super();
     this.marketplace = marketplace;
-  	this.sender = new Sender(marketplace, web3);
+    this.sender = new Sender(marketplace, web3);
   }
 
   deployDescription(node) {
-  	return this.visit(node);
+    return this.visit(node);
   }
 
   deployPrimitive(name, args) {
-    return this.sender.send(name, args, {event: 'PrimitiveStoredAt'}, (logs) => {
+    return this.sender.send(name, args, {event: 'PrimitiveStoredAt'}, logs => {
       const primitiveId = logs.args.id;
       log.info(name + ' primitive ID: ' + primitiveId);
       return primitiveId;
@@ -56,10 +56,10 @@ export default class DescriptionDeployer extends Visitor {
     const that = this;
     return child.then(primitiveId => that.deployPrimitive('Give', [primitiveId]));
   }
-    
+
   processScaleObsNode(node, child) {
     const that = this;
-   return child.then(primitiveId => {
+    return child.then(primitiveId => {
       const args = [node.gatewayAddress, primitiveId];
       return that.deployPrimitive('ScaleObs', args);
     });
@@ -72,7 +72,7 @@ export default class DescriptionDeployer extends Visitor {
       return that.deployPrimitive('Scale', args);
     });
   }
-   
+
   processOneNode(node) {
     return this.deployPrimitive('One', [node.currency]);
   }
@@ -82,6 +82,6 @@ export default class DescriptionDeployer extends Visitor {
   }
 
   processUnknownNode(node) {
-    throw('Error: Unknown case during description deployment!');
+    throw new Error('Unknown case during description deployment!');
   }
 }

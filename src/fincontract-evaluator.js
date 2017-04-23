@@ -1,104 +1,78 @@
+import {Gateway} from '../contracts/bin/gateway';
+import {Visitor, CollectingVisitor} from './fincontract-visitor';
 import Sender from './tx-sender';
-import { currencyCount } from './currency';
-import { Visitor, CollectingVisitor } from './fincontract-visitor';
-import { Gateway } from '../contracts/bin/gateway';
+import {currencyCount} from './currency';
 
-var log = require('minilog')('eval');
+const log = require('minilog')('eval');
 require('minilog').enable();
 
-const tupleMUL  = (i) => i[0] * i[1];
-const zip       = (a1, a2) => a1.map((x, i) => [x, a2[i]]); 
-const flatten   = (arr) => arr.reduce((a,b) => a.concat(b));
-const cross     = (arr1, arr2) => arr1.map(a => arr2.map(b => [a,b]));
 const makeArray = (size, obj) => Array.apply(null, Array(size)).map(_ => obj);
+const flatten = arr => arr.reduce((a, b) => a.concat(b));
+const cross = (arr1, arr2) => arr1.map(a => arr2.map(b => [a, b]));
+const zip = (a1, a2) => a1.map((x, i) => [x, a2[i]]);
+const tupleMUL = i => i[0] * i[1];
 
 /*
  * TODO
    - ScaleObs ranges should be applied here
-   - pull currency exchange rates data and calculate single USD value 
-   - return a dictionary 
+   - pull currency exchange rates data and calculate single USD value
+   - return a dictionary
  */
 
 const makeEstimationEvaluators = _ => ({
-  if:  (node) => ([iA, iB]) => [Math.min(iA[0], iB[0]), Math.max(iA[1], iB[1])],
-  or:  (node) => ([iA, iB]) => [Math.min(iA[0], iB[0]), Math.max(iA[1], iB[1])],
-  and: (node) => ([iA, iB]) => [iA[0]+iB[0], iA[1]+iB[1]],
-  give: (node) => (i) => [-i[1], -i[0]],
-  scale: (node) => (i) => [i[0]*node.scale, i[1]*node.scale],
-  scaleObs: (node) => (i) => {
-    // throw in the futures if range is not defined!
+  if: node => ([iA, iB]) => [Math.min(iA[0], iB[0]), Math.max(iA[1], iB[1])],
+  or: node => ([iA, iB]) => [Math.min(iA[0], iB[0]), Math.max(iA[1], iB[1])],
+  and: node => ([iA, iB]) => [iA[0] + iB[0], iA[1] + iB[1]],
+  give: node => i => [-i[1], -i[0]],
+  scale: node => i => [i[0] * node.scale, i[1] * node.scale],
+  scaleObs: node => i => {
+    // Throw in the futures if range is not defined!
     const range = node.range || [1, 1.2];
     const a = flatten(cross(range, i)).map(tupleMUL);
     return [Math.min(...a), Math.max(...a)];
   },
-  timebound: (node) => (i) => {
-    return (node.upperBound < Math.round(Date.now()/1000)) ? [0,0] : i
+  timebound: node => i => {
+    return (node.upperBound < Math.round(Date.now() / 1000)) ? [0, 0] : i;
   },
-  zero: (node) => _ => makeArray(currencyCount, [0,0]),
-  one: (node) => _ => {
-    const arr = makeArray(currencyCount, [0,0]); 
-    arr[node.currency] = [1,1];
+  zero: node => _ => makeArray(currencyCount, [0, 0]),
+  one: node => _ => {
+    const arr = makeArray(currencyCount, [0, 0]);
+    arr[node.currency] = [1, 1];
     return arr;
   }
 });
 
-const makeDirectEvaluators = (web3) => {
+const makeDirectEvaluators = web3 => {
   const gateway = Gateway(web3);
   const evaluator = makeEstimationEvaluators();
-  evaluator.if = (node) => ([iA, iB]) => {
+  evaluator.if = node => ([iA, iB]) => {
     const bool = gateway.at(node.gatewayAddress).getValue.call();
     return bool ? iA : iB;
   };
-  evaluator.scaleObs = (node) => (i) => {
+  evaluator.scaleObs = node => i => {
     const scale = gateway.at(node.gatewayAddress).getValue.call();
-    return [i[0]*scale, i[1]*scale];
+    return [i[0] * scale, i[1] * scale];
   };
   return evaluator;
-}
-
-export default class Evaluator {
-  
-  constructor(web3) {
-    this.web3 = web3;
-  }
-
-  evaluate(fincontract, options) {
-    const that = this;
-    const root = fincontract.rootDescription;
-
-    if (options.method === 'direct') {
-      const evaluators = makeDirectEvaluators(this.web3);
-      const ev = new EvaluatorVisitor(evaluators);
-      const gv = new GatewayVisitor(this.web3);
-      return gv.updateAllGateways(root).then(
-        _ => Promise.resolve(ev.visit(root))
-      );
-    } else if (options.method === 'estimate') {
-      const evaluators = makeEstimationEvaluators();
-      const ev = new EvaluatorVisitor(evaluators);
-      return Promise.resolve(ev.visit(root));
-    } 
-      else return Promise.reject('Wrong evaluation method')
-  }
-}
+};
 
 class EvaluatorVisitor extends Visitor {
 
-  constructor(nodeEvaluators) { 
+  constructor(nodeEvaluators) {
     super();
     this.nodeEvaluators = nodeEvaluators;
   }
 
   processAndNode(node, left, right) {
-    return zip(left,right).map(this.nodeEvaluators.and(node));
+    return zip(left, right).map(this.nodeEvaluators.and(node));
   }
 
   processIfNode(node, left, right) {
-    return zip(left,right).map(this.nodeEvaluators.if(node));
+    return zip(left, right).map(this.nodeEvaluators.if(node));
   }
 
   processOrNode(node, left, right) {
-    return zip(left,right).map(this.nodeEvaluators.or(node));
+    return zip(left, right).map(this.nodeEvaluators.or(node));
   }
 
   processTimeboundNode(node, child) {
@@ -126,7 +100,7 @@ class EvaluatorVisitor extends Visitor {
   }
 
   processUnknownNode(node) {
-    throw('Error: Unknown case during evaluation');
+    throw new Error('Unknown case during evaluation');
   }
 
 }
@@ -143,11 +117,13 @@ class GatewayVisitor extends CollectingVisitor {
   }
 
   updateGateway(address, type) {
-    if (!parseInt(address)) throw('Gateway\'s address was 0x0');
+    if (!parseInt(address, 16)) {
+      throw new Error(`Gateway's address was 0x0`);
+    }
     const gateway = Gateway(this.web3).at(address);
     const s = new Sender(gateway, this.web3);
-    return s.send('update', [], {filter: 'latest'}, (logs) => {
-      log.info('Finished updating ' + type +' gateway at: ' + address);
+    return s.send('update', [], {filter: 'latest'}, logs => {
+      log.info('Finished updating ' + type + ' gateway at: ' + address);
     });
   }
 
@@ -159,5 +135,31 @@ class GatewayVisitor extends CollectingVisitor {
   processScaleObsNode(node, child) {
     const self = this.updateGateway(node.gatewayAddress, 'ScaleObs');
     return [...child, self];
+  }
+}
+
+export default class Evaluator {
+
+  constructor(web3) {
+    this.web3 = web3;
+  }
+
+  evaluate(fincontract, options) {
+    const that = this;
+    const root = fincontract.rootDescription;
+
+    if (options.method === 'direct') {
+      const evaluators = makeDirectEvaluators(this.web3);
+      const ev = new EvaluatorVisitor(evaluators);
+      const gv = new GatewayVisitor(this.web3);
+      return gv.updateAllGateways(root).then(
+        _ => Promise.resolve(ev.visit(root))
+      );
+    } else if (options.method === 'estimate') {
+      const evaluators = makeEstimationEvaluators();
+      const ev = new EvaluatorVisitor(evaluators);
+      return Promise.resolve(ev.visit(root));
+    }
+    return Promise.reject(Error('Wrong evaluation method'));
   }
 }

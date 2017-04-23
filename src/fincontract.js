@@ -41,8 +41,6 @@ export class FincOrNode extends FincNode {
   }
 }
 
-export class FincGiveNode extends FincNode {}
-
 export class FincScaleObsNode extends FincNode {
   constructor(child, gatewayAddress) {
     super(child);
@@ -63,5 +61,7 @@ export class FincOneNode extends FincNode {
     this.currency = currency;
   }
 }
+
+export class FincGiveNode extends FincNode {}
 
 export class FincZeroNode extends FincNode {}

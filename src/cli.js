@@ -1,72 +1,70 @@
 #!/usr/bin/env node --harmony
-const vorpal  = require('vorpal')();
-const chalk   = require('chalk');
-var Web3 = require('web3');
-var web3 = new Web3();
-var marketplace  = null;
-
-import * as figures from 'figures'
-import * as logSymbols from 'log-symbols';
-
-import { BigNumber } from 'bignumber.js';
-import { FincontractMarketplace } from '../contracts/bin/marketplace';
-
+import {BigNumber} from 'bignumber.js';
+import {FincontractMarketplace} from '../contracts/bin/marketplace';
 import Serializer from './fincontract-serializer';
-import Evaluator  from './fincontract-evaluator';
-import Deployer   from './fincontract-deployer';
-import Examples   from './fincontract-examples';
-import Fetcher    from './fincontract-fetcher';
-import Parser     from './fincontract-parser';
-import Sender     from './tx-sender';
-import Storage    from './storage';
-
+import Evaluator from './fincontract-evaluator';
+import Deployer from './fincontract-deployer';
+import Examples from './fincontract-examples';
+import Fetcher from './fincontract-fetcher';
+import Parser from './fincontract-parser';
+import Sender from './tx-sender';
+import Storage from './storage';
 import * as Currency from './currency';
 
-const error  = msg => chalk.bold.red(`${figures.cross} ${msg}`);
-const ok     = msg => chalk.green(`${figures.tick} ${msg}`);
-const warn   = msg => chalk.yellow(`${logSymbols.warning} ${msg}`);
-const info   = msg => chalk.blue(`${logSymbols.info} ${msg}`);
+const figures = require('figures');
+const logSymbols = require('log-symbols');
+const vorpal = require('vorpal')();
+const chalk = require('chalk');
+const Web3 = require('web3');
 
-/* setting up local-storage hook */
+const web3 = new Web3();
+let marketplace = null;
+
+const error = msg => chalk.bold.red(`${figures.cross} ${msg}`);
+const warn = msg => chalk.yellow(`${logSymbols.warning} ${msg}`);
+const info = msg => chalk.blue(`${logSymbols.info} ${msg}`);
+const ok = msg => chalk.green(`${figures.tick} ${msg}`);
+
+/* Setting up local-storage hook */
 vorpal.localStorage('fincontract-client');
 const storage = new Storage(vorpal.localStorage);
 
-const parseAddress = (str) => {
-  const id = parseBigNum(str) || '0'
-  return '0x' + zfill(id.toString(16), 64)
-}
-const zfill = (num, len) => (Array(len).join('0') + num).slice(-len)
-const parseBigNum = (str) => {
+const parseBigNum = str => {
   try {
     return new BigNumber(str);
-  } catch (e) {
+  } catch (err) {
     vorpal.log(error('Not a number!'));
   }
-}
+};
+const zfill = (num, len) => (Array(len).join('0') + num).slice(-len);
+const parseAddress = str => {
+  const id = parseBigNum(str) || '0';
+  return '0x' + zfill(id.toString(16), 64);
+};
 
 const isNodeConnected = _ => web3.isConnected() || error('Node is not connected');
-const connectToEthereumNode = (host) => {
+const connectToEthereumNode = host => {
   const url = `http://${host}`;
   const provider = new web3.providers.HttpProvider(url);
-  web3.setProvider(provider);  
+  web3.setProvider(provider);
   if (isNodeConnected() === true) {
     marketplace = FincontractMarketplace(web3);
     web3.eth.defaultAccount = web3.eth.coinbase;
     vorpal.log(ok(`Connected to node: ${url}`));
-  } else
+  } else {
     vorpal.log(error(`Did NOT connect, is node running at ${url} ?`));
+  }
 };
 
 const checkAndRegisterAccount = () => {
-  if (!marketplace.isRegistered.call()) {
-    const s = new Sender(marketplace, web3);
-    s.send('register', [], {event: 'Registered'}, (logs) => {
-      vorpal.log(chalk.blue(`Registered account: ${logs.args.user}`));
-      return logs.args.user;
-    });
-  } else {
+  if (marketplace.isRegistered.call()) {
     vorpal.log(info('You are already registered!'));
   }
+  const s = new Sender(marketplace, web3);
+  s.send('register', [], {event: 'Registered'}, logs => {
+    vorpal.log(chalk.blue(`Registered account: ${logs.args.user}`));
+    return logs.args.user;
+  });
 };
 
 const printFincontract = (name, fincontract, detailed) => {
@@ -76,21 +74,22 @@ const printFincontract = (name, fincontract, detailed) => {
     vorpal.log(info(`Owner:\t\t' ${fincontract.owner}`));
     vorpal.log(info(`Issuer:\t\t' ${fincontract.issuer}`));
     vorpal.log(info(`Proposed Owner:\t' ${fincontract.proposedOwner}`));
-    vorpal.log(info(`Description:\t\t' ${fincontract.description}`));    
+    vorpal.log(info(`Description:\t\t' ${fincontract.description}`));
   }
   vorpal.log('');
-}
+};
 
 const saveFincontract = (fincontract, name, overwrite) => {
   const srz = new Serializer();
   const serialized = srz.serialize(fincontract);
-  if (storage.addFincontract(name, serialized, overwrite))
+  if (storage.addFincontract(name, serialized, overwrite)) {
     vorpal.log(info(`Fincontract saved as '${name}'`));
-  else
+  } else {
     vorpal.log(warn('Fincontract with this name already exists!'));
-}
+  }
+};
 
-/* TODO - remove at the end */
+// TODO - remove at the end
 connectToEthereumNode('localhost:8000');
 
 vorpal
@@ -126,15 +125,15 @@ vorpal
       const ow = args.options.overwrite;
       const f = new Fetcher(marketplace);
       promise = promise.then(fctID => f.pullFincontract(fctID))
-        .then(fincontract => saveFincontract(fincontract, name, ow))
+        .then(fincontract => saveFincontract(fincontract, name, ow));
     }
-    promise.catch(e => vorpal.log(error(e)));
+    promise.catch(err => vorpal.log(error(err)));
     cb();
   });
 
 vorpal
   .command('pull <fincontract_id>')
-  .autocomplete({ data: () => storage.getFincontractIDs() })
+  .autocomplete({data: () => storage.getFincontractIDs()})
   .option('-s, --save <name>', 'Save fincontract description as [name]')
   .option('-e, --eval <method>', 'Evaluate fincontract using a method', ['direct', 'estimate'])
   .option('--convert <base>', 'Convert result of evaluation to currency', Object.values(Currency.Currencies))
@@ -143,16 +142,16 @@ vorpal
   .description('Pulls contract from blockchain.')
   .validate(isNodeConnected)
   .action((args, cb) => {
-    
-    vorpal.log(args)
-    
+    vorpal.log(args);
+
     const id = parseAddress(args.fincontract_id);
     const f = new Fetcher(marketplace);
 
     f.pullFincontract(id)
       .then(fincontract => {
-        if (storage.addFincontractID(id))
-          vorpal.log(info(`ID added to autocomplete!`));
+        if (storage.addFincontractID(id)) {
+          vorpal.log(info('ID added to autocomplete!'));
+        }
         return Promise.resolve(fincontract);
       })
       .then(fincontract => {
@@ -166,35 +165,36 @@ vorpal
       .then(fincontract => {
         if (args.options.eval) {
           const e = new Evaluator(web3);
-          const base = args.options.convert || `USD`;
+          const base = args.options.convert || 'USD';
           const method = args.options.eval;
-          const evaluated = e.evaluate(fincontract, {method: method})
-            .then((list) => Currency.convertToJSON(list));
-
-          evaluated
-            .then((currencies) => Currency.changeAllCurrencies(base, currencies))
-            .then((res) => vorpal.log(chalk.cyan(JSON.stringify(res))));
-          evaluated
-            .then((res) => vorpal.log(chalk.cyan(JSON.stringify(res))));
+          return e.evaluate(fincontract, {method})
+            .then(list => Currency.convertToJSON(list))
+            .then(currencies => {
+              vorpal.log(chalk.cyan(JSON.stringify(currencies)));
+              return currencies;
+            })
+            .then(currencies => Currency.changeAllCurrencies(base, currencies))
+            .then(exchanged => vorpal.log(chalk.cyan(JSON.stringify(exchanged))));
         }
       })
-      .catch(e => vorpal.log(error(e)));
+      .catch(err => vorpal.log(error(err)));
 
     cb();
   });
 
 vorpal
   .command('show <name>')
-  .autocomplete({ data: () => Object.keys(storage.getFincontracts())})
+  .autocomplete({data: () => Object.keys(storage.getFincontracts())})
   .validate(isNodeConnected)
   .description('Shows detailed information about saved contract')
   .action((args, cb) => {
     const name = args.name;
     const fincontract = storage.getFincontractByName(name);
-    if (fincontract) 
+    if (fincontract) {
       printFincontract(name, fincontract, true);
-    else
+    } else {
       vorpal.log(error('Contract not found!'));
+    }
     cb();
   });
 
@@ -205,26 +205,26 @@ vorpal
   .description('Lists all contracts')
   .action((args, cb) => {
     const fincontracts = storage.getFincontracts();
-    for (const name in fincontracts) {
+    Object.keys(fincontracts).forEach(name => {
       printFincontract(name, fincontracts[name], args.options.detail);
-    }
+    });
     cb();
   });
 
 vorpal
   .command('reset')
   .description('Wipes out all user settings (autocomplete, etc)')
-  .action(function(args, cb){
+  .action(function (args, cb) {
     this.prompt({
       type: 'confirm',
       name: 'continue',
-      message: 'Are you sure you want to remove all user settings?',
-    }, (result) => {
-      if (!result.continue) {
-        vorpal.log(ok('Good move.'));
-      } else {
+      message: 'Are you sure you want to remove all user settings?'
+    }, result => {
+      if (result.continue) {
         vorpal.log(error('All settings were deleted!'));
         storage.wipe();
+      } else {
+        vorpal.log(ok('Good move.'));
       }
       cb();
     });
@@ -237,7 +237,7 @@ vorpal
   .action((args, cb) => {
     checkAndRegisterAccount();
     cb();
-  })
+  });
 
 vorpal
   .command('example <index>')
@@ -247,9 +247,10 @@ vorpal
   .action((args, cb) => {
     const ex = new Examples(marketplace, web3);
     ex.runExample(args.index).then(fctID => {
-      if (storage.addFincontractID(fctID))
-        vorpal.log(info('ID added to autocomplete!'));   
-    }).catch(e => vorpal.log(error(e)));
+      if (storage.addFincontractID(fctID)) {
+        vorpal.log(info('ID added to autocomplete!'));
+      }
+    }).catch(err => vorpal.log(error(err)));
 
     cb();
   });

@@ -1,7 +1,7 @@
 import * as finc from './fincontract';
 
-var log = require('minilog')('fetcher');
-require('minilog').enable();
+// Const log = require('minilog')('fetcher');
+// require('minilog').enable();
 
 export default class Fetcher {
 
@@ -10,65 +10,68 @@ export default class Fetcher {
   }
 
   static get Primitives() {
-    return { 
+    return {
       0: {
-        type: 'Zero', 
-        childrenCount: 0, 
-        builder: (desc) => new finc.FincZeroNode() 
+        type: 'Zero',
+        childrenCount: 0,
+        builder: desc => new finc.FincZeroNode()
       },
       1: {
-        type: 'One', 
-        childrenCount: 0, 
-        builder: (desc) => new finc.FincOneNode(desc[1])
+        type: 'One',
+        childrenCount: 0,
+        builder: desc => new finc.FincOneNode(parseInt(desc[1], 10))
       },
-      2: { 
+      2: {
         type: 'Give',
         childrenCount: 1,
-        builder: (desc, child) => new finc.FincGiveNode(child) 
+        builder: (desc, child) => new finc.FincGiveNode(child)
       },
       3: {
         type: 'And',
         childrenCount: 2,
-        builder: (desc, left, right) => new finc.FincAndNode(left,right)
+        builder: (desc, left, right) => new finc.FincAndNode(left, right)
       },
       4: {
         type: 'Or',
         childrenCount: 2,
-        builder: (desc, left, right) => new finc.FincOrNode(left,right)
+        builder: (desc, left, right) => new finc.FincOrNode(left, right)
       },
       5: {
         type: 'ScaleObs',
         childrenCount: 1,
-        builder: (desc, child) => new finc.FincScaleObsNode(child,desc[5])
+        builder: (desc, child) => new finc.FincScaleObsNode(child, desc[5])
       },
       6: {
         type: 'If',
         childrenCount: 2,
-        builder: (desc, left, right) => new finc.FincIfNode(left,right,desc[5])
+        builder: (desc, left, right) => new finc.FincIfNode(left, right, desc[5])
       }
-    }
+    };
   }
 
   pullFincontract(fctID) {
     const that = this;
     const getInfo = new Promise((resolve, reject) => {
       that.marketplace.getFincontractInfo(fctID, (err, fctInfo) => {
-        if (err || !parseInt(fctInfo[0])) reject('Contract was not found!');
+        console.log(fctInfo);
+        if (err || !parseInt(fctInfo[0], 16)) {
+          reject(Error('Contract was not found!'));
+        }
         resolve(fctInfo);
-      });      
+      });
     });
     const getDesc = getInfo.then(fctInfo => that.pullDescription(fctInfo[3]));
     return Promise.all([getInfo, getDesc]).then(([fctInfo, desc]) =>
-      new finc.Fincontract(fctID, fctInfo[0], fctInfo[1], fctInfo[2], desc)  
+      new finc.Fincontract(fctID, fctInfo[0], fctInfo[1], fctInfo[2], desc)
     );
   }
 
   pullDescription(descID) {
     return new Promise((resolve, reject) => {
       this.marketplace.getDescriptionInfo(descID, (err, info) => {
-        
-        if (err || !info.some(e => !!parseInt(e))) 
-          reject('Description was empty!');
+        if (err || !info.some(e => Boolean(parseInt(e, 16)))) {
+          reject(Error('Description was empty!'));
+        }
 
         const primitive = Fetcher.Primitives[info[0]];
 
@@ -78,22 +81,22 @@ export default class Fetcher {
         childrenIds.then(ids => {
           let currentNode = primitive.builder(info, ...ids);
 
-          // if scale is present, then build node for it above the current one
-          const scale = info[4];
-          currentNode = (scale != 1) 
-            ? new finc.FincScaleNode(currentNode, scale) 
-            : currentNode;
-          
-          // if lowerBound is not 0, then most likely we have a timebound node
-          const lowerBound = info[6];
-          const upperBound = info[7];
-          currentNode = (lowerBound != 0) 
-            ? new finc.FincTimeboundNode(currentNode, lowerBound, upperBound) 
-            : currentNode;
+          // If scale is present, then build node for it above the current one
+          const scale = parseInt(info[4], 10);
+          currentNode = (scale === 1) ?
+            currentNode :
+            new finc.FincScaleNode(currentNode, scale);
+
+          // If lowerBound is not 0, then most likely we have a timebound node
+          const lowerBound = parseInt(info[6], 10);
+          const upperBound = parseInt(info[7], 10);
+          currentNode = (lowerBound === 0) ?
+            currentNode :
+            new finc.FincTimeboundNode(currentNode, lowerBound, upperBound);
 
           resolve(currentNode);
         });
-      });      
-    })
+      });
+    });
   }
 }
