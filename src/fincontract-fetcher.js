@@ -53,7 +53,6 @@ export default class Fetcher {
     const that = this;
     const getInfo = new Promise((resolve, reject) => {
       that.marketplace.getFincontractInfo(fctID, (err, fctInfo) => {
-        console.log(fctInfo);
         if (err || !parseInt(fctInfo[0], 16)) {
           reject(Error('Contract was not found!'));
         }

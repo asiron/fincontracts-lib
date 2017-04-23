@@ -1,6 +1,3 @@
-- finish Gateways evaluation
-- currency exchange rate fetch and auto all to USD conversion
-- add support for multiple accounts (register and connect ?)
 - fincontract execution
 	- join (executes contract)
 	- join will trigger 

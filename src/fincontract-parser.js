@@ -5,7 +5,9 @@ import {getCurrencyIndex} from './currency';
 export default class Parser {
 
   parse(expression) {
-    return Promise.resolve(this.visit(math.parse(expression)));
+    return new Promise((resolve, reject) => {
+      resolve(this.visit(math.parse(expression)));
+    });
   }
 
   visit(node) {
