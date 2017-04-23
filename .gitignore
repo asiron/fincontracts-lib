@@ -4,3 +4,4 @@ node_modules/
 lib/
 .geth_data/
 *xmlhttprequest*
+res/password.pass
