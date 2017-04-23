@@ -79,10 +79,10 @@ const printFincontract = (name, fincontract, detailed) => {
   vorpal.log('');
 }
 
-const saveFincontract = (fincontract, name) => {
+const saveFincontract = (fincontract, name, overwrite) => {
   const srz = new serializer.Serializer();
   const serialized = srz.serialize(fincontract);
-  if (storage.addFincontract(name, serialized))
+  if (storage.addFincontract(name, serialized, overwrite))
     vorpal.log(info('Fincontract saved as \'' + name + '\''));
   else
     vorpal.log(warn('Fincontract with this name already exists!'));
@@ -104,6 +104,7 @@ vorpal
   .command('create <expr>')
   .option('-i, --issue [address]', 'Issues the fincontract after deploying to given address')
   .option('-s, --save  [name]', 'Saves the contract after deploying to local storage')
+  .option('--overwrite', 'Overwrites the contract if it already exists with same name!')
   .description('Creates fincontract and deploys it to the blockchain')
   .validate(isNodeConnected)
   .action((args, cb) => {
@@ -120,9 +121,10 @@ vorpal
 
     if (args.options.save) {
       const name = args.options.save;
+      const ow = args.options.overwrite;
       const f = new fetcher.Fetcher(marketplace);
       promise = promise.then(fctID => f.pullFincontract(fctID))
-        .then(fincontract => saveFincontract(fincontract, name))
+        .then(fincontract => saveFincontract(fincontract, name, ow))
     }
     promise.catch(e => vorpal.log(error(e)));
     cb();
@@ -132,7 +134,8 @@ vorpal
   .command('pull <fincontract_id>')
   .autocomplete({ data: () => storage.getFincontractIDs() })
   .option('-s, --save [name]', 'Save fincontract description as [name]')
-  .option('-e, --eval [method]', 'Evaluate fincontract using a method', ['now', 'estimate'])
+  .option('-e, --eval [method]', 'Evaluate fincontract using a method', ['direct', 'estimate'])
+  .option('--overwrite', 'Overwrites the contract if it already exists with same name!')
   .types({string: ['_']})
   .description('Pulls contract from blockchain.')
   .validate(isNodeConnected)
@@ -152,20 +155,39 @@ vorpal
       .then(fincontract => {
         if (args.options.save) {
           const name = args.options.save;
-          saveFincontract(fincontract, name);
+          const ow = args.options.overwrite;
+          saveFincontract(fincontract, name, ow);
         }
         return Promise.resolve(fincontract);
       })
       .then(fincontract => {
         if (args.options.eval) {
           const method = args.options.eval;
-          const e = new evaluator.Evaluator(marketplace, web3);
+          const e = new evaluator.Evaluator(web3);
           return e.evaluate(fincontract, {method: method})
             .then((res) => vorpal.log(chalk.cyan(res)))
         }
       })
-      .catch(e => vorpal.log(error(e)));
+      .catch(e => {
+        vorpal.log(error(e));
+        marketplace.allEvents().stopWatching();
+      });
 
+    cb();
+  });
+
+vorpal
+  .command('show <name>')
+  .autocomplete({ data: () => Object.keys(storage.getFincontracts())})
+  .validate(isNodeConnected)
+  .description('Shows detailed information about saved contract')
+  .action((args, cb) => {
+    const name = args.name;
+    const fincontract = storage.getFincontractByName(name);
+    if (fincontract) 
+      printFincontract(name, fincontract, true);
+    else
+      vorpal.log(error('Contract not found!'));
     cb();
   });
 
@@ -175,7 +197,7 @@ vorpal
   .validate(isNodeConnected)
   .description('Lists all contracts')
   .action((args, cb) => {
-    const fincontracts = storage.getFincontracts()
+    const fincontracts = storage.getFincontracts();
     for (const name in fincontracts) {
       printFincontract(name, fincontracts[name], args.options.detail);
     }
