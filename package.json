@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "build": "babel src -d lib",
-    "test" : "xo"
+    "test" : "xo --fix"
   },
   "devDependencies": {
     "babel-cli": "^6.0.0",
@@ -27,6 +27,9 @@
     "web3": "^0.18.2"
   },
   "xo": {
-    "space": true
+    "space": true,
+    "rules": {
+      "new-cap": 0
+    }
   }
 }

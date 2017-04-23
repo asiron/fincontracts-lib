@@ -66,39 +66,33 @@ function make_accounts {
   rm $GENESISFILE.tmp
 }
 
+function compile_contract {
+  CONTRACT_NAME=$1
+  CONTRACT_SRC=$2
+  OUTPUT_DEPLOYMENT_SCRIPT=$3
+  
+  $SOLC_HELPER \
+    --contract $CONTRACT_NAME \
+    --gas 3000000 \
+    --value 0 \
+    --output $OUTPUT_DEPLOYMENT_SCRIPT \
+    $CONTRACT_SRC
+}
+
 function compile_contracts {
   mkdir -p $CONTRACT_BIN
   rm -r $CONTRACT_BIN/*
 
   echo "Compiling contract..."
 
-  $SOLC_HELPER \
-    --contract FincontractMarketplace \
-    --gas 3000000 \
-    --value 0 \
-    --output $CONTRACT_BIN/marketplace_deploy.js \
-    contracts/fincontracts/marketplace.sol
+  CONTRACT_SRC=contracts/fincontracts/marketplace.sol
 
-  $SOLC_HELPER \
-    --contract GatewayBool \
-    --gas 3000000 \
-    --value 0 \
-    --output $CONTRACT_BIN/gatewaybool_deploy.js \
-    contracts/fincontracts/marketplace.sol
-
-  $SOLC_HELPER \
-    --contract GatewayInteger \
-    --gas 3000000 \
-    --value 0 \
-    --output $CONTRACT_BIN/gatewayint_deploy.js \
-    contracts/fincontracts/marketplace.sol
-
-  $SOLC_HELPER\
-    --contract Gateway \
-    --gas 1000000 \
-    --value 0 \
-    --output $CONTRACT_BIN/gateway_deploy.js \
-    contracts/fincontracts/marketplace.sol
+  compile_contract Gateway $CONTRACT_SRC $CONTRACT_BIN/gateway_deploy.js
+  compile_contract GatewayTrue $CONTRACT_SRC $CONTRACT_BIN/gatewaytrue_deploy.js
+  compile_contract GatewayFalse $CONTRACT_SRC $CONTRACT_BIN/gatewayfalse_deploy.js
+  compile_contract GatewayBool $CONTRACT_SRC $CONTRACT_BIN/gatewaybool_deploy.js
+  compile_contract GatewayInteger $CONTRACT_SRC $CONTRACT_BIN/gatewayint_deploy.js
+  compile_contract FincontractMarketplace $CONTRACT_SRC $CONTRACT_BIN/marketplace_deploy.js
 }
 
 function start {
