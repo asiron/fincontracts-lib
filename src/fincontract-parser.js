@@ -1,8 +1,8 @@
-const math = require('mathjs');
-const finc = require('./fincontract');
-const curr = require('./currency');
+import * as math from 'mathjs';
+import * as finc from './fincontract';
+import { getCurrencyIndex } from './currency';
 
-export class Parser {
+export default class Parser {
   
   constructor() {}
 
@@ -57,7 +57,7 @@ export class Parser {
 
       case 'One':
         return new finc.FincOneNode(
-          parseInt(curr.getCurrencyIndex(node.args[0].name))
+          parseInt(getCurrencyIndex(node.args[0].name))
         );
 
       case 'Zero':

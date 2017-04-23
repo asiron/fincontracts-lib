@@ -1,4 +1,4 @@
-const finc = require('./fincontract');
+import * as finc from './fincontract';
 
 export class Visitor {
 

@@ -1,4 +1,4 @@
-export class Storage {
+export default class Storage {
 
   static get IDS_CAT() { return 'ID'; }
   static get FINCONTRACTS_CAT() { return 'Fincontract'; }

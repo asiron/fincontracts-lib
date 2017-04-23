@@ -1,10 +1,9 @@
-const math = require('mathjs');
-const finc = require('./fincontract');
-const parser = require('./fincontract-parser');
+import * as finc from './fincontract';
+
 var log = require('minilog')('fetcher');
 require('minilog').enable();
 
-export class Fetcher {
+export default class Fetcher {
 
   constructor(marketplace) {
     this.marketplace = marketplace;

@@ -3,7 +3,7 @@ require('minilog').enable();
 
 const GAS = 4000000;
 
-export class Sender {
+export default class Sender {
   constructor(contract, web3) {
     this.contract = contract;
     this.web3 = web3;

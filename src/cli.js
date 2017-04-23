@@ -1,33 +1,33 @@
 #!/usr/bin/env node --harmony
 const vorpal  = require('vorpal')();
 const chalk   = require('chalk');
-const figures = require('figures');
-const logSymbols = require('log-symbols');
-const BigNumber  = require('bignumber.js');
+var Web3 = require('web3');
+var web3 = new Web3();
+var marketplace  = null;
+
+import * as figures from 'figures'
+import * as logSymbols from 'log-symbols';
+
+import { BigNumber } from 'bignumber.js';
+import { FincontractMarketplace } from '../contracts/bin/marketplace';
+
+import Serializer from './fincontract-serializer';
+import Evaluator from './fincontract-evaluator';
+import Deployer from './fincontract-deployer';
+import Examples from './fincontract-examples';
+import Fetcher from './fincontract-fetcher';
+import Parser from './fincontract-parser';
+import Sender from './tx-sender';
+import Storage from './storage';
 
 const error  = msg => chalk.bold.red(figures.cross + " " + msg);
 const ok     = msg => chalk.green(figures.tick + " " + msg);
 const warn   = msg => chalk.yellow(logSymbols.warning + "  " + msg);
 const info   = msg => chalk.blue(logSymbols.info + " " + msg);
 
-var Web3 = require('web3');
-var web3 = new Web3();
-
-const marketplacejs = require('../contracts/bin/marketplace.js');
-const fetcher    = require("./fincontract-fetcher");
-const evaluator  = require("./fincontract-evaluator");
-const serializer = require("./fincontract-serializer");
-const parser     = require('./fincontract-parser');
-const deployer   = require('./fincontract-deployer');
-const examples   = require('./fincontract-examples')
-const sender     = require('./tx-sender');
-
-var marketplace  = null;
-
 /* setting up local-storage hook */
 vorpal.localStorage('fincontract-client');
-var storage = require('./storage');
-storage = new storage.Storage(vorpal.localStorage);
+const storage = new Storage(vorpal.localStorage);
 
 const parseAddress = (str) => {
   const id = parseBigNum(str) || '0'
@@ -48,7 +48,7 @@ const connectToEthereumNode = (host) => {
   const provider = new web3.providers.HttpProvider(url);
   web3.setProvider(provider);  
   if (isNodeConnected() == true) {
-    marketplace = marketplacejs.FincontractMarketplace(web3);
+    marketplace = FincontractMarketplace(web3);
     web3.eth.defaultAccount = web3.eth.coinbase;
     vorpal.log(ok('Connected to node: ' + url));
   } else
@@ -57,7 +57,7 @@ const connectToEthereumNode = (host) => {
 
 const checkAndRegisterAccount = () => {
   if (!marketplace.isRegistered.call()) {
-    const s = new sender.Sender(marketplace, web3);
+    const s = new Sender(marketplace, web3);
     s.send('register', [], {event: 'Registered'}, (logs) => {
       vorpal.log(chalk.blue("Registered account: " + logs.args.user));
       return logs.args.user;
@@ -80,7 +80,7 @@ const printFincontract = (name, fincontract, detailed) => {
 }
 
 const saveFincontract = (fincontract, name, overwrite) => {
-  const srz = new serializer.Serializer();
+  const srz = new Serializer();
   const serialized = srz.serialize(fincontract);
   if (storage.addFincontract(name, serialized, overwrite))
     vorpal.log(info('Fincontract saved as \'' + name + '\''));
@@ -108,8 +108,8 @@ vorpal
   .description('Creates fincontract and deploys it to the blockchain')
   .validate(isNodeConnected)
   .action((args, cb) => {
-    const p = new parser.Parser();
-    const d = new deployer.Deployer(marketplace, web3);
+    const p = new Parser();
+    const d = new Deployer(marketplace, web3);
 
     let promise = p.parse(args.expr);
     if (args.options.issue) {
@@ -122,7 +122,7 @@ vorpal
     if (args.options.save) {
       const name = args.options.save;
       const ow = args.options.overwrite;
-      const f = new fetcher.Fetcher(marketplace);
+      const f = new Fetcher(marketplace);
       promise = promise.then(fctID => f.pullFincontract(fctID))
         .then(fincontract => saveFincontract(fincontract, name, ow))
     }
@@ -144,7 +144,7 @@ vorpal
     vorpal.log(args)
     
     const id = parseAddress(args.fincontract_id);
-    const f = new fetcher.Fetcher(marketplace);
+    const f = new Fetcher(marketplace);
 
     f.pullFincontract(id)
       .then(fincontract => {
@@ -163,7 +163,7 @@ vorpal
       .then(fincontract => {
         if (args.options.eval) {
           const method = args.options.eval;
-          const e = new evaluator.Evaluator(web3);
+          const e = new Evaluator(web3);
           return e.evaluate(fincontract, {method: method})
             .then((res) => vorpal.log(chalk.cyan(res)))
         }
@@ -234,11 +234,11 @@ vorpal
 
 vorpal
   .command('example <index>')
-  .autocomplete(examples.AllExamples)
+  .autocomplete(Examples.AllExamples)
   .validate(isNodeConnected)
   .description('Deploys one of the examples from marketplace smart contract')
   .action((args, cb) => {
-    const ex = new examples.Examples(marketplace, web3);
+    const ex = new Examples(marketplace, web3);
     ex.runExample(args.index).then(fctID => {
       if (storage.addFincontractID(fctID))
         vorpal.log(info('ID added to autocomplete!'));   

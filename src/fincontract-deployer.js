@@ -1,14 +1,14 @@
-const dd = require('./fincontract-description-deployer')
-const sender = require('./tx-sender');
+import DescriptionDeployer from './fincontract-description-deployer';
+import Sender from './tx-sender';
 
 var log = require('minilog')('deploy');
 require('minilog').enable();
 
-export class Deployer {
+export default class Deployer {
   
   constructor(marketplace, web3) {
-    this.dd = new dd.DescriptionDeployer(marketplace, web3);
-    this.sender = new sender.Sender(marketplace, web3);
+    this.dd = new DescriptionDeployer(marketplace, web3);
+    this.sender = new Sender(marketplace, web3);
     this.marketplace = marketplace;
   }
 

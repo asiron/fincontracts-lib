@@ -1,19 +1,21 @@
-const gatewayintjs = require('../contracts/bin/gatewayint.js');
-const gatewaybooljs = require('../contracts/bin/gatewaybool.js');
+import { GatewayInteger } from '../contracts/bin/gatewayint';
+import { GatewayBool} from '../contracts/bin/gatewaybool';
+import Sender from './tx-sender';
 
-const sender = require('./tx-sender');
 var log = require('minilog')('example');
 require('minilog').enable();
 
-export const AllExamples = [
-  'simpleTest', 
-  'complexScaleObsTest', 
-  'timeboundTest', 
-  'setGateways',
-  'resetGateways'
-];
+export default class Examples {
 
-export class Examples {
+  static get AllExamples() {
+    return [
+      'simpleTest', 
+      'complexScaleObsTest', 
+      'timeboundTest', 
+      'setGateways',
+      'resetGateways'
+    ];
+  }
 
   constructor(marketplace, web3) {
     this.marketplace = marketplace;
@@ -35,10 +37,10 @@ export class Examples {
     else if (['setGateways','resetGateways'].includes(name)) 
     {
       const gatewayint  = (name == 'setGateways')
-        ? gatewayintjs.GatewayInteger(this.web3).address : 0;
+        ? GatewayInteger(this.web3).address : 0;
       
       const gatewaybool = (name == 'setGateways')
-        ? gatewaybooljs.GatewayBool(this.web3).address : 0;
+        ? GatewayBool(this.web3).address : 0;
 
       return this.setGateways(gatewayint, gatewaybool);
     } 
@@ -65,7 +67,7 @@ export class Examples {
   }
 
   deploy(name, args, event, block) {
-    const s = new sender.Sender(this.marketplace, this.web3);
+    const s = new Sender(this.marketplace, this.web3);
     return s.send(name, args, event, block);
   }
 }

@@ -1,9 +1,9 @@
-const curr = require('./currency');
-const v    = require('./fincontract-visitor');
+import { Visitor } from './fincontract-visitor';
+import { Currencies } from './currency';
 
 const compressZero = (addr) => parseInt(addr) ? addr : '0x0'
 
-export class Serializer {
+export default class Serializer {
   
   constructor() {
     this.sv = new SerializerVisitor();
@@ -18,10 +18,9 @@ export class Serializer {
       description: this.sv.visit(fincontract.rootDescription)
     };
   }
-
 }
 
-class SerializerVisitor extends v.Visitor {
+class SerializerVisitor extends Visitor {
 
   constructor() { super(); }
 
@@ -56,7 +55,7 @@ class SerializerVisitor extends v.Visitor {
   }
 
   processOneNode(node) {
-    return 'One(' + curr.Currencies[node.currency] + ')';
+    return 'One(' + Currencies[node.currency] + ')';
   }
 
   processZeroNode(node) {

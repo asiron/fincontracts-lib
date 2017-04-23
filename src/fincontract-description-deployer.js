@@ -1,15 +1,15 @@
-const sender = require('./tx-sender');
-const v = require('./fincontract-visitor');
+import Sender from './tx-sender';
+import { Visitor, CollectingVisitor } from './fincontract-visitor';
 
 var log = require('minilog')('desc-deploy');
 require('minilog').enable();
 
-export class DescriptionDeployer extends v.Visitor {
+export default class DescriptionDeployer extends Visitor {
   
   constructor(marketplace, web3) {
   	super();
     this.marketplace = marketplace;
-  	this.sender = new sender.Sender(marketplace, web3);
+  	this.sender = new Sender(marketplace, web3);
   }
 
   deployDescription(node) {

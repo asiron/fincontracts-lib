@@ -1,12 +1,10 @@
-const curr = require('./currency');
-const sender = require('./tx-sender');
-const v = require('./fincontract-visitor');
-
+import Sender from './tx-sender';
+import { currencyCount } from './currency';
+import { Visitor, CollectingVisitor } from './fincontract-visitor';
+import { Gateway } from '../contracts/bin/gateway';
 
 var log = require('minilog')('eval');
 require('minilog').enable();
-
-const gatewayjs = require('../contracts/bin/gateway.js');
 
 const tupleMUL  = (i) => i[0] * i[1];
 const zip       = (a1, a2) => a1.map((x, i) => [x, a2[i]]); 
@@ -38,16 +36,16 @@ const makeEstimationEvaluators = _ => ({
   timebound: (node) => (i) => {
     return node.upperBound < Math.round(Date.now() / 1000) ? [0,0] : i
   },
-  zero: (node) => _ => makeArray(curr.currencyCount, [0,0]),
+  zero: (node) => _ => makeArray(currencyCount, [0,0]),
   one: (node) => _ => {
-    const arr = makeArray(curr.currencyCount, [0,0]); 
+    const arr = makeArray(currencyCount, [0,0]); 
     arr[node.currency] = [1,1];
     return arr;
   }
 });
 
 const makeDirectEvaluators = (web3) => {
-  const gateway = gatewayjs.Gateway(web3);
+  const gateway = Gateway(web3);
   const evaluator = makeEstimationEvaluators();
   evaluator.if = (node) => ([iA, iB]) => {
     const bool = gateway.at(node.gatewayAddress).getValue.call();
@@ -60,7 +58,7 @@ const makeDirectEvaluators = (web3) => {
   return evaluator;
 }
 
-export class Evaluator {
+export default class Evaluator {
   
   constructor(web3) {
     this.web3 = web3;
@@ -86,7 +84,7 @@ export class Evaluator {
   }
 }
 
-class EvaluatorVisitor extends v.Visitor {
+class EvaluatorVisitor extends Visitor {
 
   constructor(nodeEvaluators) { 
     super();
@@ -135,7 +133,7 @@ class EvaluatorVisitor extends v.Visitor {
 
 }
 
-class GatewayVisitor extends v.CollectingVisitor {
+class GatewayVisitor extends CollectingVisitor {
 
   constructor(web3) {
     super();
@@ -147,8 +145,9 @@ class GatewayVisitor extends v.CollectingVisitor {
   }
 
   updateGateway(address, type) {
-    const gateway = gatewayjs.Gateway(this.web3).at(address);
-    const s = new sender.Sender(gateway, this.web3);
+    if (!parseInt(address)) throw('Gateway\'s address was 0x0');
+    const gateway = Gateway(this.web3).at(address);
+    const s = new Sender(gateway, this.web3);
     return s.send('update', [], {filter: 'latest'}, (logs) => {
       log.info('Finished updating ' + type +' gateway at: ' + address);
     });
