@@ -30,22 +30,22 @@ export class Fetcher {
       3: {
         type: 'And',
         childrenCount: 2,
-        builder: (desc, left, right) => new finc.FincAndNode(left, right)
+        builder: (desc, left, right) => new finc.FincAndNode(left,right)
       },
       4: {
         type: 'Or',
         childrenCount: 2,
-        builder: (desc, left, right) => new finc.FincOrNode(left, right)
+        builder: (desc, left, right) => new finc.FincOrNode(left,right)
       },
       5: {
         type: 'ScaleObs',
         childrenCount: 1,
-        builder: (desc, child) => new finc.FincScaleObsNode(child, desc[5])
+        builder: (desc, child) => new finc.FincScaleObsNode(child,desc[5])
       },
       6: {
         type: 'If',
         childrenCount: 2,
-        builder: (desc, left, right) => new finc.FincIfNode(left, right, desc[5])
+        builder: (desc, left, right) => new finc.FincIfNode(left,right,desc[5])
       }
     }
   }
@@ -67,7 +67,9 @@ export class Fetcher {
   pullDescription(descID) {
     return new Promise((resolve, reject) => {
       this.marketplace.getDescriptionInfo(descID, (err, info) => {
-        if (err || !info.some(e => !!parseInt(e))) reject('Description was empty!');
+        
+        if (err || !info.some(e => !!parseInt(e))) 
+          reject('Description was empty!');
 
         const primitive = Fetcher.Primitives[info[0]];
 
@@ -83,7 +85,7 @@ export class Fetcher {
             ? new finc.FincScaleNode(currentNode, scale) 
             : currentNode;
           
-          // if lowerBound is not 0, then most likely we also have a timebound node
+          // if lowerBound is not 0, then most likely we have a timebound node
           const lowerBound = info[6];
           const upperBound = info[7];
           currentNode = (lowerBound != 0) 
