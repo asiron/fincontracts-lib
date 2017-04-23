@@ -1,6 +1,8 @@
-const finc = require('./fincontract');
 const curr = require('./currency');
 const sender = require('./tx-sender');
+const v = require('./fincontract-visitor');
+
+
 var log = require('minilog')('eval');
 require('minilog').enable();
 
@@ -10,7 +12,7 @@ const tupleMUL  = (i) => i[0] * i[1];
 const zip       = (a1, a2) => a1.map((x, i) => [x, a2[i]]); 
 const flatten   = (arr) => arr.reduce((a,b) => a.concat(b));
 const cross     = (arr1, arr2) => arr1.map(a => arr2.map(b => [a,b]));
-const makeArray = (size, obj) => Array.apply(null, Array(size)).map(_ => obj)
+const makeArray = (size, obj) => Array.apply(null, Array(size)).map(_ => obj);
 
 /*
  * TODO
@@ -21,10 +23,46 @@ const makeArray = (size, obj) => Array.apply(null, Array(size)).map(_ => obj)
    - return a dictionary 
  */
 
+const makeEstimationEvaluators = _ => ({
+  if:  (node) => ([iA, iB]) => [Math.min(iA[0], iB[0]), Math.max(iA[1], iB[1])],
+  or:  (node) => ([iA, iB]) => [Math.min(iA[0], iB[0]), Math.max(iA[1], iB[1])],
+  and: (node) => ([iA, iB]) => [iA[0]+iB[0], iA[1]+iB[1]],
+  give: (node) => (i) => [-i[1], -i[0]],
+  scale: (node) => (i) => [i[0]*node.scale, i[1]*node.scale],
+  scaleObs: (node) => (i) => {
+    // throw in the futures if range is not defined!
+    const range = node.range || [1, 1.2];
+    const a = flatten(cross(range, i)).map(tupleMUL);
+    return [Math.min(...a), Math.max(...a)];
+  },
+  timebound: (node) => (i) => {
+    return node.upperBound < Math.round(Date.now() / 1000) ? [0,0] : i
+  },
+  zero: (node) => _ => makeArray(curr.currencyCount, [0,0]),
+  one: (node) => _ => {
+    const arr = makeArray(curr.currencyCount, [0,0]); 
+    arr[node.currency] = [1,1];
+    return arr;
+  }
+});
+
+const makeDirectEvaluators = (web3) => {
+  const gateway = gatewayjs.Gateway(web3);
+  const evaluator = makeEstimationEvaluators();
+  evaluator.if = (node) => ([iA, iB]) => {
+    const bool = gateway.at(node.gatewayAddress).getValue.call();
+    return bool ? iA : iB;
+  };
+  evaluator.scaleObs = (node) => (i) => {
+    const scale = gateway.at(node.gatewayAddress).getValue.call();
+    return [i[0]*scale, i[1]*scale];
+  };
+  return evaluator;
+}
+
 export class Evaluator {
   
-  constructor(marketplace, web3) {
-    this.marketplace = marketplace;
+  constructor(web3) {
     this.web3 = web3;
   }
 
@@ -32,119 +70,97 @@ export class Evaluator {
     const that = this;
     const root = fincontract.rootDescription;
 
-    if (options.method == 'now') {
-      return this.updateAllGateways(root).then(
-        Promise.resolve(that.eval(root, options.method))
+    if (options.method == 'direct') {
+      const evaluators = makeDirectEvaluators(this.web3);
+      const ev = new EvaluatorVisitor(evaluators);
+      const gv = new GatewayVisitor(this.web3);
+      return gv.updateAllGateways(root).then(
+        _ => Promise.resolve(ev.visit(root))
       );
-
     } else if (options.method == 'estimate') {
-      //IF nodes are now OR nodes
-      //apply gateway ranges
-      return Promise.resolve(this.eval(root, options.method));
-    
-    } else return Promise.reject('Wrong evaluation method')
+      const evaluators = makeEstimationEvaluators();
+      const ev = new EvaluatorVisitor(evaluators);
+      return Promise.resolve(ev.visit(root));
+    } 
+      else return Promise.reject('Wrong evaluation method')
+  }
+}
+
+class EvaluatorVisitor extends v.Visitor {
+
+  constructor(nodeEvaluators) { 
+    super();
+    this.nodeEvaluators = nodeEvaluators;
   }
 
-  eval(node, method) {
+  processAndNode(node, left, right) {
+    return zip(left,right).map(this.nodeEvaluators.and(node));
+  }
 
+  processIfNode(node, left, right) {
+    return zip(left,right).map(this.nodeEvaluators.if(node));
+  }
 
+  processOrNode(node, left, right) {
+    return zip(left,right).map(this.nodeEvaluators.or(node));
+  }
 
-    switch (node.constructor) {
+  processTimeboundNode(node, child) {
+    return child.map(this.nodeEvaluators.timebound(node));
+  }
 
-      case finc.FincAndNode: {
-        const left  = this.eval(node.children[0]);
-        const right = this.eval(node.children[1]);
-        return zip(left,right).map( 
-          ([iA, iB]) => [iA[0]+iB[0], iA[1]+iB[1]]
-        );
-      }
+  processGiveNode(node, child) {
+    return child.map(this.nodeEvaluators.give(node));
+  }
 
-      case finc.FincIfNode: {
-        const left  = this.eval(node.children[0]);
-        const right = this.eval(node.children[1]);
-        return zip(left,right).map( 
-          ([iA, iB]) => [Math.min(iA[0], iB[0]), Math.max(iA[1], iB[1])]
-        );
-      } 
+  processScaleObsNode(node, child) {
+    return child.map(this.nodeEvaluators.scaleObs(node));
+  }
 
-      case finc.FincOrNode: {
-        const left  = this.eval(node.children[0]);
-        const right = this.eval(node.children[1]);
-        return zip(left,right).map( 
-          ([iA, iB]) => [Math.min(iA[0], iB[0]), Math.max(iA[1], iB[1])]
-        );
-      }
+  processScaleNode(node, child) {
+    return child.map(this.nodeEvaluators.scale(node));
+  }
 
-      case finc.FincTimeboundNode:
-        return this.eval(node.children).map(
-          (i) => node.upperBound < Math.round(Date.now() / 1000) ? [0,0] : i
-        );
+  processOneNode(node) {
+    return this.nodeEvaluators.one(node).call();
+  }
 
-      case finc.FincScaleObsNode: {
-        // ????
-        const range = [1, 1.2];
-        return this.eval(node.children).map(
-          (i) => {
-            const a = flatten(cross(range, i)).map(tupleMUL);
-            return [Math.min(...a), Math.max(...a)];
-        });
-      }
+  processZeroNode(node) {
+    return this.nodeEvaluators.zero(node).call();
+  }
 
-      case finc.FincScaleNode:
-        return this.eval(node.children).map(
-          (i) => [i[0]*node.scale, i[1]*node.scale]
-        );
-        
-      case finc.FincGiveNode:
-        return this.eval(node.children).map((i) => [-i[1], -i[0]]);
+  processUnknownNode(node) {
+    throw('Error: Unknown case during evaluation');
+  }
 
+}
 
-      case finc.FincOneNode: {
-        const arr = makeArray(curr.currencyCount, [0,0]); 
-        arr[node.currency] = [1,1];
-        return arr;
-      }
+class GatewayVisitor extends v.CollectingVisitor {
 
-      case finc.FincZeroNode:
-        return makeArray(curr.currencyCount, [0,0]);
-
-      default: throw('Error: Unknown case during evaluation');
-    }
+  constructor(web3) {
+    super();
+    this.web3 = web3;
   }
 
   updateAllGateways(node) {
-    return Promise.all(this.visitGateway(node))
-      .catch(e => log.error(e));
-  }
-
-  visitGateway(node) {
-    if (node.children instanceof Array) {
-      const left  = this.visitGateway(node.children[0]);
-      const right = this.visitGateway(node.children[1]);
-      const self  = this.updateGateway(node.gatewayAddress, 'If');
-      return [...left, ...right, self];
-    } else if (node.children) {
-      const child = this.visitGateway(node.children);
-      const self  = this.updateGateway(node.gatewayAddress, 'ScaleObs');
-      return [...child, self];
-    } else {
-      return [Promise.resolve()];
-    }
+    return Promise.all(this.visit(node));
   }
 
   updateGateway(address, type) {
-    if (!address) return [Promise.resolve()];
     const gateway = gatewayjs.Gateway(this.web3).at(address);
     const s = new sender.Sender(gateway, this.web3);
-    const sent = s.send('update', [], {filter: 'latest'}, (logs) =>
-      log.info('Finished! ' + type)).catch(e => log.warn(e));
-    return [sent];
+    return s.send('update', [], {filter: 'latest'}, (logs) => {
+      log.info('Finished updating ' + type +' gateway at: ' + address);
+    });
   }
 
-  callGateway(address) {
-    const gateway = gatewayjs.Gateway(this.web3).at(address);
-
-
+  processIfNode(node, left, right) {
+    const self = this.updateGateway(node.gatewayAddress, 'If');
+    return [...left, ...right, self];
   }
 
+  processScaleObsNode(node, child) {
+    const self = this.updateGateway(node.gatewayAddress, 'ScaleObs');
+    return [...child, self];
+  }
 }
