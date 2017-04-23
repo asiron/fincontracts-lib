@@ -11,16 +11,16 @@ export class Storage {
     return JSON.parse(this.storage.getItem(category)) || {}
   }
 
-  addToStorage(category, key, value) {
+  addToStorage(category, key, value, overw) {
     const objects = this.getFromStorage(category);
-    if (objects[key]) return false;
+    if (!overw && objects[key]) return false;
     objects[key] = value;
     this.storage.setItem(category, JSON.stringify(objects));
     return true;
   }
 
-  addFincontract(name, fincontract) {
-    return this.addToStorage(Storage.FINCONTRACTS_CAT, name, fincontract);
+  addFincontract(name, fincontract, overw) {
+    return this.addToStorage(Storage.FINCONTRACTS_CAT, name, fincontract, overw);
   }
 
   getFincontracts() {
@@ -32,7 +32,7 @@ export class Storage {
   }
 
   addFincontractID(id) {
-    return this.addToStorage(Storage.IDS_CAT, id, true);
+    return typeof id === 'string' && this.addToStorage(Storage.IDS_CAT, id, true);
   }
 
   getFincontractIDs() {
