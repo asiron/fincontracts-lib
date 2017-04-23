@@ -1,6 +1,6 @@
 import * as math from 'mathjs';
 import * as finc from './fincontract';
-import { getCurrencyIndex } from './currency';
+import {getCurrencyIndex} from './currency';
 
 export default class Parser {
   

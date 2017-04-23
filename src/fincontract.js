@@ -1,8 +1,8 @@
 export class Fincontract {
   constructor(id, issuer, owner, proposedOwner, rootDescription) {
     this.id = id;
+    this.owner = owner;
     this.issuer = issuer;
-    this.owner  = owner;
     this.proposedOwner = proposedOwner;
     this.rootDescription = rootDescription;
   }
@@ -41,11 +41,7 @@ export class FincOrNode extends FincNode {
   }
 }
 
-export class FincGiveNode extends FincNode {
-  constructor(child) {
-    super(child);
-  }
-}
+export class FincGiveNode extends FincNode {}
 
 export class FincScaleObsNode extends FincNode {
   constructor(child, gatewayAddress) {
@@ -68,8 +64,4 @@ export class FincOneNode extends FincNode {
   }
 }
 
-export class FincZeroNode extends FincNode {
-  constructor() {
-    super(null);
-  }
-}
+export class FincZeroNode extends FincNode {}

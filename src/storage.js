@@ -1,19 +1,26 @@
 export default class Storage {
 
-  static get IDS_CAT() { return 'ID'; }
-  static get FINCONTRACTS_CAT() { return 'Fincontract'; }
+  static get IDS_CAT() {
+    return 'ID';
+  }
+
+  static get FINCONTRACTS_CAT() {
+    return 'Fincontract';
+  }
 
   constructor(storage) {
     this.storage = storage;
   }
 
   getFromStorage(category) {
-    return JSON.parse(this.storage.getItem(category)) || {}
+    return JSON.parse(this.storage.getItem(category)) || {};
   }
 
   addToStorage(category, key, value, overw) {
     const objects = this.getFromStorage(category);
-    if (!overw && objects[key]) return false;
+    if (!overw && objects[key]) {
+      return false;
+    }
     objects[key] = value;
     this.storage.setItem(category, JSON.stringify(objects));
     return true;
@@ -38,7 +45,7 @@ export default class Storage {
   getFincontractIDs() {
     return Object.keys(this.getFromStorage(Storage.IDS_CAT));
   }
-  
+
   wipe() {
     this.storage.removeItem(Storage.IDS_CAT);
     this.storage.removeItem(Storage.FINCONTRACTS_CAT);

@@ -14,9 +14,7 @@ const makeArray = (size, obj) => Array.apply(null, Array(size)).map(_ => obj);
 
 /*
  * TODO
-   - include evaluation now and estimation
    - ScaleObs ranges should be applied here
-   - now should call Gateways
    - pull currency exchange rates data and calculate single USD value 
    - return a dictionary 
  */
@@ -34,7 +32,7 @@ const makeEstimationEvaluators = _ => ({
     return [Math.min(...a), Math.max(...a)];
   },
   timebound: (node) => (i) => {
-    return node.upperBound < Math.round(Date.now() / 1000) ? [0,0] : i
+    return (node.upperBound < Math.round(Date.now()/1000)) ? [0,0] : i
   },
   zero: (node) => _ => makeArray(currencyCount, [0,0]),
   one: (node) => _ => {
@@ -68,14 +66,14 @@ export default class Evaluator {
     const that = this;
     const root = fincontract.rootDescription;
 
-    if (options.method == 'direct') {
+    if (options.method === 'direct') {
       const evaluators = makeDirectEvaluators(this.web3);
       const ev = new EvaluatorVisitor(evaluators);
       const gv = new GatewayVisitor(this.web3);
       return gv.updateAllGateways(root).then(
         _ => Promise.resolve(ev.visit(root))
       );
-    } else if (options.method == 'estimate') {
+    } else if (options.method === 'estimate') {
       const evaluators = makeEstimationEvaluators();
       const ev = new EvaluatorVisitor(evaluators);
       return Promise.resolve(ev.visit(root));

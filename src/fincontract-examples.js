@@ -28,7 +28,7 @@ export default class Examples {
     {
       return this.deployExample(name, [0x0]);
     } 
-    else if (name == 'timeboundTest')
+    else if (name === 'timeboundTest')
     {
       const lowerBound = Math.round(Date.now() / 1000 + 120);
       const upperBound = Math.round(Date.now() / 1000 + 3600);
@@ -36,10 +36,10 @@ export default class Examples {
     } 
     else if (['setGateways','resetGateways'].includes(name)) 
     {
-      const gatewayint  = (name == 'setGateways')
+      const gatewayint  = (name === 'setGateways')
         ? GatewayInteger(this.web3).address : 0;
       
-      const gatewaybool = (name == 'setGateways')
+      const gatewaybool = (name === 'setGateways')
         ? GatewayBool(this.web3).address : 0;
 
       return this.setGateways(gatewayint, gatewaybool);
@@ -60,8 +60,8 @@ export default class Examples {
     return this.deploy(name, args, {event: 'CreatedBy'}, (logs) => {
       const fctID = logs.args.fctId;
       const owner = logs.args.user;
-      log.info("Fincontract: " + fctID);
-      log.info("Created for: " + owner); 
+      log.info('Fincontract: ' + fctID);
+      log.info('Created for: ' + owner); 
       return fctID;
     });
   }
