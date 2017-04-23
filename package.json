@@ -2,11 +2,13 @@
   "name": "fincontracts-client",
   "version": "1.0.0",
   "scripts": {
-    "build": "babel src -d lib"
+    "build": "babel src -d lib",
+    "test" : "xo"
   },
   "devDependencies": {
     "babel-cli": "^6.0.0",
-    "babel-preset-env": "^1.1.8"
+    "babel-preset-env": "^1.1.8",
+    "xo": "^0.18.1"
   },
   "bin": {
     "fincli": "./lib/cli.js"
@@ -23,5 +25,8 @@
     "vorpal": "^1.11.4",
     "vorpal-repl": "^1.1.8",
     "web3": "^0.18.2"
+  },
+  "xo": {
+    "space": true
   }
 }
