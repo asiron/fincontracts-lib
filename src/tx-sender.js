@@ -12,7 +12,8 @@ export class Sender {
   send(name, args, eventOptions, block) {
     const that = this;
     const executor = (resolve, reject) => {
-      const tx = that.contract[name].sendTransaction(...args, {gas: GAS}, (err, tx) => {
+      const method = that.contract[name];
+      const tx = method.sendTransaction(...args, {gas: GAS}, (err, tx) => {
         if (!err) {
           log.info(name + ' transaction was sent. HASH: ' + tx);
           if (!that.web3.eth.getTransaction(tx)) {
@@ -44,7 +45,7 @@ export class Sender {
     return (tx, resolve, reject) => {
       listener.watch((err, logs) => {
         if (err) {
-          reject(err + 'when watching tx: ' + tx);
+          reject(err + ' when watching tx: ' + tx);
           return;
         }
         if (predicate(tx, logs)) {
