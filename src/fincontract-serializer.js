@@ -1,11 +1,13 @@
-const finc = require('./fincontract');
 const curr = require('./currency');
+const v    = require('./fincontract-visitor');
 
 const compressZero = (addr) => parseInt(addr) ? addr : '0x0'
 
 export class Serializer {
   
-  constructor() {}
+  constructor() {
+    this.sv = new SerializerVisitor();
+  }
 
   serialize(fincontract) {
     return {
@@ -13,50 +15,56 @@ export class Serializer {
       owner: compressZero(fincontract.owner), 
       issuer: compressZero(fincontract.issuer), 
       proposedOwner: compressZero(fincontract.proposedOwner),
-      description: this.visit(fincontract.rootDescription)
+      description: this.sv.visit(fincontract.rootDescription)
     };
   }
 
-  visit(node) {
+}
 
-    switch (node.constructor) {
-      
-      case finc.FincTimeboundNode:
-        return 'Timebound(' + node.lowerBound + ',' 
-          + node.upperBound + ',' + this.visit(node.children) + ')';
+class SerializerVisitor extends v.Visitor {
 
-      case finc.FincAndNode:
-        return 'And(' + this.visit(node.children[0]) + ','
-          + this.visit(node.children[1]) + ')';
+  constructor() { super(); }
 
-      case finc.FincIfNode:
-        return 'If(' + compressZero(node.gatewayAddress) + ',' 
-          + this.visit(node.children[0]) + ',' 
-          + this.visit(node.children[1]) + ')';
-
-      case finc.FincOrNode:
-        return 'Or(' + this.visit(node.children[0]) + ','
-          + this.visit(node.children[1]) + ')';
-
-      case finc.FincGiveNode:
-        return 'Give(' + this.visit(node.children) + ')';
-
-      case finc.FincScaleObsNode:
-        return 'ScaleObs(' + compressZero(node.gatewayAddress) + ',' 
-          + this.visit(node.children) + ')';
-
-      case finc.FincScaleNode:
-        return 'Scale(' + node.scale + ',' 
-          + this.visit(node.children) + ')';
-
-      case finc.FincOneNode:
-        return 'One(' + curr.Currencies[node.currency] + ')'
-
-      case finc.FincZeroNode:
-        return 'Zero()'
-
-      default: throw('Error: Unknown case during serialization');
-
-    }
+  processAndNode(node, left, right) {
+    return 'And(' + left + ',' + right + ')';
   }
+
+  processIfNode(node, left, right) {
+    return 'If(' + compressZero(node.gatewayAddress) + ',' 
+      + left + ',' + right + ')';
+  }
+   
+  processOrNode(node, left, right) {
+    return 'Or(' + left + ',' + right + ')';
+  }
+
+  processTimeboundNode(node, child) {
+    return 'Timebound(' + node.lowerBound + ',' 
+      + node.upperBound + ',' + child + ')';
+  } 
+
+  processGiveNode(node, child) {
+    return 'Give(' + child + ')';
+  }
+
+  processScaleObsNode(node, child) {
+    return 'ScaleObs(' + compressZero(node.gatewayAddress) + ',' + child + ')';
+  }
+
+  processScaleNode(node, child) {
+    return 'Scale(' + node.scale + ',' + child + ')';
+  }
+
+  processOneNode(node) {
+    return 'One(' + curr.Currencies[node.currency] + ')';
+  }
+
+  processZeroNode(node) {
+    return 'Zero()';
+  }
+
+  processUnknownNode(node) {
+    throw('Error: Unknown case during serialization!');
+  }
+
 }
