@@ -47,10 +47,10 @@ export class Visitor {
         return this.processOneNode(node);
 
       case finc.FincZeroNode:
-        return this.processZeroNode(node);
+        return this.processZeroNode();
 
       default:
-        return this.processUnknownNode(node);
+        return this.processUnknownNode();
 
     }
   }
@@ -79,10 +79,10 @@ export class CollectingVisitor extends Visitor {
   processGiveNode(node, child) {
     return child;
   }
-  processOneNode(node) {
+  processOneNode() {
     return [];
   }
-  processZeroNode(node) {
+  processZeroNode() {
     return [];
   }
 }

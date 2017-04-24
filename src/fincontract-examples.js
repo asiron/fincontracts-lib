@@ -44,9 +44,9 @@ export default class Examples {
 
   setGateways(gatewayint, gatewaybool) {
     const p1 = this.deploy('setGatewayI', [gatewayint],
-      {filter: 'latest'}, logs => log.info('gatewayI set to ' + gatewayint));
+      {filter: 'latest'}, () => log.info('gatewayI set to ' + gatewayint));
     const p2 = this.deploy('setGatewayB', [gatewaybool],
-      {filter: 'latest'}, logs => log.info('gatewayB set to ' + gatewaybool));
+      {filter: 'latest'}, () => log.info('gatewayB set to ' + gatewaybool));
     return Promise.all([p1, p2]);
   }
 

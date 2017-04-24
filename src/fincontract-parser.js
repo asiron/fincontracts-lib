@@ -6,7 +6,11 @@ export default class Parser {
 
   parse(expression) {
     return new Promise((resolve, reject) => {
-      resolve(this.visit(math.parse(expression)));
+      try {
+        resolve(this.visit(math.parse(expression)));
+      } catch (err) {
+        reject(err);
+      }
     });
   }
 

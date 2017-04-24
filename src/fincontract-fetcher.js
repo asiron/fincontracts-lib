@@ -14,7 +14,7 @@ export default class Fetcher {
       0: {
         type: 'Zero',
         childrenCount: 0,
-        builder: desc => new finc.FincZeroNode()
+        builder: () => new finc.FincZeroNode()
       },
       1: {
         type: 'One',
@@ -60,9 +60,15 @@ export default class Fetcher {
       });
     });
     const getDesc = getInfo.then(fctInfo => that.pullDescription(fctInfo[3]));
-    return Promise.all([getInfo, getDesc]).then(([fctInfo, desc]) =>
-      new finc.Fincontract(fctID, fctInfo[0], fctInfo[1], fctInfo[2], desc)
-    );
+    return Promise.all([getInfo, getDesc]).then(([fctInfo, desc]) => {
+      return new finc.Fincontract({
+        id: fctID,
+        issuer: fctInfo[0],
+        owner: fctInfo[1],
+        proposedOwner: fctInfo[2],
+        rootDescription: desc
+      });
+    });
   }
 
   pullDescription(descID) {

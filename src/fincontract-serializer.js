@@ -39,11 +39,11 @@ class SerializerVisitor extends Visitor {
     return 'One(' + Currencies[node.currency] + ')';
   }
 
-  processZeroNode(node) {
+  processZeroNode() {
     return 'Zero()';
   }
 
-  processUnknownNode(node) {
+  processUnknownNode() {
     throw new Error('Unknown case during serialization!');
   }
 

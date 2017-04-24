@@ -6,7 +6,7 @@ import {currencyCount} from './currency';
 const log = require('minilog')('eval');
 require('minilog').enable();
 
-const makeArray = (size, obj) => Array.apply(null, Array(size)).map(_ => obj);
+const makeArray = (size, obj) => Array.apply(null, Array(size)).map(() => obj);
 const flatten = arr => arr.reduce((a, b) => a.concat(b));
 const cross = (arr1, arr2) => arr1.map(a => arr2.map(b => [a, b]));
 const zip = (a1, a2) => a1.map((x, i) => [x, a2[i]]);
@@ -19,11 +19,11 @@ const tupleMUL = i => i[0] * i[1];
    - return a dictionary
  */
 
-const makeEstimationEvaluators = _ => ({
-  if: node => ([iA, iB]) => [Math.min(iA[0], iB[0]), Math.max(iA[1], iB[1])],
-  or: node => ([iA, iB]) => [Math.min(iA[0], iB[0]), Math.max(iA[1], iB[1])],
-  and: node => ([iA, iB]) => [iA[0] + iB[0], iA[1] + iB[1]],
-  give: node => i => [-i[1], -i[0]],
+const makeEstimationEvaluators = () => ({
+  if: () => ([iA, iB]) => [Math.min(iA[0], iB[0]), Math.max(iA[1], iB[1])],
+  or: () => ([iA, iB]) => [Math.min(iA[0], iB[0]), Math.max(iA[1], iB[1])],
+  and: () => ([iA, iB]) => [iA[0] + iB[0], iA[1] + iB[1]],
+  give: () => i => [-i[1], -i[0]],
   scale: node => i => [i[0] * node.scale, i[1] * node.scale],
   scaleObs: node => i => {
     // Throw in the futures if range is not defined!
@@ -34,8 +34,8 @@ const makeEstimationEvaluators = _ => ({
   timebound: node => i => {
     return (node.upperBound < Math.round(Date.now() / 1000)) ? [0, 0] : i;
   },
-  zero: node => _ => makeArray(currencyCount, [0, 0]),
-  one: node => _ => {
+  zero: () => () => makeArray(currencyCount, [0, 0]),
+  one: node => () => {
     const arr = makeArray(currencyCount, [0, 0]);
     arr[node.currency] = [1, 1];
     return arr;
@@ -99,7 +99,7 @@ class EvaluatorVisitor extends Visitor {
     return this.nodeEvaluators.zero(node).call();
   }
 
-  processUnknownNode(node) {
+  processUnknownNode() {
     throw new Error('Unknown case during evaluation');
   }
 
@@ -122,7 +122,7 @@ class GatewayVisitor extends CollectingVisitor {
     }
     const gateway = Gateway(this.web3).at(address);
     const s = new Sender(gateway, this.web3);
-    return s.send('update', [], {filter: 'latest'}, logs => {
+    return s.send('update', [], {filter: 'latest'}, () => {
       log.info('Finished updating ' + type + ' gateway at: ' + address);
     });
   }
@@ -145,15 +145,13 @@ export default class Evaluator {
   }
 
   evaluate(fincontract, options) {
-    const that = this;
     const root = fincontract.rootDescription;
-
     if (options.method === 'direct') {
       const evaluators = makeDirectEvaluators(this.web3);
       const ev = new EvaluatorVisitor(evaluators);
       const gv = new GatewayVisitor(this.web3);
       return gv.updateAllGateways(root).then(
-        _ => Promise.resolve(ev.visit(root))
+        () => Promise.resolve(ev.visit(root))
       );
     } else if (options.method === 'estimate') {
       const evaluators = makeEstimationEvaluators();

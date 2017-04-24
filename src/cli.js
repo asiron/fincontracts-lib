@@ -42,7 +42,7 @@ const parseAddress = str => {
   return '0x' + zfill(id.toString(16), 64);
 };
 
-const isNodeConnected = _ => web3.isConnected() || error('Node is not connected');
+const isNodeConnected = () => web3.isConnected() || error('Node is not connected');
 const connectToEthereumNode = host => {
   const url = `http://${host}`;
   const provider = new web3.providers.HttpProvider(url);
@@ -90,7 +90,7 @@ const saveFincontract = (fincontract, name, overwrite) => {
 };
 
 const autocompleteAccounts = () => {
-  if(!web3.isConnected()) {
+  if (!web3.isConnected()) {
     return [];
   }
   const accounts = web3.eth.accounts;
@@ -98,7 +98,6 @@ const autocompleteAccounts = () => {
   return [...indicies, ...accounts];
 };
 
-// TODO - remove at the end
 connectToEthereumNode('localhost:8000');
 
 cli
@@ -129,7 +128,6 @@ cli
     }
     cb();
   });
-
 
 cli
   .command('list-accounts')

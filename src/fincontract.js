@@ -1,10 +1,10 @@
 export class Fincontract {
-  constructor(id, issuer, owner, proposedOwner, rootDescription) {
-    this.id = id;
-    this.owner = owner;
-    this.issuer = issuer;
-    this.proposedOwner = proposedOwner;
-    this.rootDescription = rootDescription;
+  constructor(kwargs) {
+    this.id = kwargs.id;
+    this.owner = kwargs.owner;
+    this.issuer = kwargs.issuer;
+    this.proposedOwner = kwargs.proposedOwner;
+    this.rootDescription = kwargs.rootDescription;
   }
 }
 

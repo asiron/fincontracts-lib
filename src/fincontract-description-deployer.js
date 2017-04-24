@@ -77,11 +77,11 @@ export default class DescriptionDeployer extends Visitor {
     return this.deployPrimitive('One', [node.currency]);
   }
 
-  processZeroNode(node) {
+  processZeroNode() {
     return this.deployPrimitive('Zero', []);
   }
 
-  processUnknownNode(node) {
+  processUnknownNode() {
     throw new Error('Unknown case during description deployment!');
   }
 }

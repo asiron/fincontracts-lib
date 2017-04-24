@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "build": "babel src -d lib",
-    "test" : "xo --fix"
+    "test" : "xo"
   },
   "devDependencies": {
     "babel-cli": "^6.0.0",
