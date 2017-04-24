@@ -110,6 +110,25 @@ cli
   });
 
 cli
+  .command('register')
+  .validate(isNodeConnected)
+  .description('Registers currently selected account')
+  .action((args, cb) => {
+    checkAndRegisterAccount();
+    cb();
+  });
+
+cli
+  .command('show-balance')
+  .validate(isNodeConnected)
+  .description('Shows balance of currently selected account')
+  .action((args, cb) => {
+    const balance = Currency.convertToJSON(marketplace.getMyBalance.call());
+    cli.log(ok(JSON.stringify(balance)));
+    cb();
+  });
+
+cli
   .command('select-account <index-or-address>')
   .autocomplete({data: () => autocompleteAccounts()})
   .description('Selects an Ethereum account for sending transactions')
@@ -131,9 +150,9 @@ cli
 
 cli
   .command('list-accounts')
-  .description('List Ethereum accounts')
+  .description('Lists Ethereum accounts')
   .action((args, cb) => {
-    cli.log('Available Ethereum accounts');
+    cli.log(info('Available Ethereum accounts:'));
     web3.eth.accounts.forEach((account, index) => {
       cli.log(info(`${index}: ${account}`));
     });
@@ -141,7 +160,7 @@ cli
   });
 
 cli
-  .command('create <expr>')
+  .command('create-fincontract <expr>')
   .option('-i, --issue <address>', 'Issues the fincontract after deploying to given address')
   .option('-s, --save  <name>', 'Saves the contract after deploying to local storage')
   .option('--overwrite', 'Overwrites the contract if it already exists with same name!')
@@ -171,7 +190,7 @@ cli
   });
 
 cli
-  .command('pull <fincontract_id>')
+  .command('pull-fincontract <id>')
   .autocomplete({data: () => storage.getFincontractIDs()})
   .option('-s, --save <name>', 'Save fincontract description as [name]')
   .option('-e, --eval <method>', 'Evaluate fincontract using a method', ['direct', 'estimate'])
@@ -183,7 +202,7 @@ cli
   .action((args, cb) => {
     cli.log(args);
 
-    const id = parseAddress(args.fincontract_id);
+    const id = parseAddress(args.id);
     const f = new Fetcher(marketplace);
 
     f.pullFincontract(id)
@@ -222,10 +241,10 @@ cli
   });
 
 cli
-  .command('show <name>')
+  .command('show-fincontract <name>')
   .autocomplete({data: () => Object.keys(storage.getFincontracts())})
   .validate(isNodeConnected)
-  .description('Shows detailed information about saved contract')
+  .description('Shows detailed information about a saved fincontract')
   .action((args, cb) => {
     const name = args.name;
     const fincontract = storage.getFincontractByName(name);
@@ -241,7 +260,7 @@ cli
   .command('list-fincontracts')
   .option('-d, --detail', 'Lists detailed description of the fincontracts')
   .validate(isNodeConnected)
-  .description('Lists all contracts')
+  .description('Lists all saved fincontracts')
   .action((args, cb) => {
     const fincontracts = storage.getFincontracts();
     Object.keys(fincontracts).forEach(name => {
@@ -251,8 +270,8 @@ cli
   });
 
 cli
-  .command('reset')
-  .description('Wipes out all user settings (autocomplete, etc)')
+  .command('delete-settings')
+  .description('Wipes out all user settings (autocomplete, saved fincontracts)')
   .action(function (args, cb) {
     this.prompt({
       type: 'confirm',
@@ -267,15 +286,6 @@ cli
       }
       cb();
     });
-  });
-
-cli
-  .command('register')
-  .validate(isNodeConnected)
-  .description('Registers currently selected account')
-  .action((args, cb) => {
-    checkAndRegisterAccount();
-    cb();
   });
 
 cli
