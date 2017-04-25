@@ -2,6 +2,9 @@ import * as math from 'mathjs';
 import * as finc from './fincontract';
 import {getCurrencyIndex} from './currency';
 
+const DELTA = 30;
+const EXPIRATION = 3600 * 24 * 365;
+
 export default class Parser {
 
   parse(expression) {
@@ -16,6 +19,27 @@ export default class Parser {
 
   visit(node) {
     switch (node.fn.name) {
+
+      case 'At': {
+        const at = parseInt(node.args[0].value, 10);
+        const begin = at - (DELTA / 2);
+        const end = at + (DELTA / 2);
+        const child = this.visit(node.args[1]);
+        return new finc.FincTimeboundNode(child, begin, end);
+      }
+
+      case 'Before': {
+        const end = parseInt(node.args[0].value, 10);
+        const child = this.visit(node.args[1]);
+        return new finc.FincTimeboundNode(child, 0, end);
+      }
+
+      case 'After': {
+        const begin = parseInt(node.args[0].value, 10);
+        const end = (Date.now() / 1000) + EXPIRATION;
+        const child = this.visit(node.args[1]);
+        return new finc.FincTimeboundNode(child, begin, end);
+      }
 
       case 'Timebound': {
         const begin = parseInt(node.args[0].value, 10);

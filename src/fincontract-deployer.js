@@ -24,22 +24,26 @@ export default class Deployer {
 
   issueFincontract(fctID, proposedOwner) {
     const args = [fctID, proposedOwner];
-    return this.sender.send('issueFor', args, {event: 'IssuedFor'}, logs => {
-      const fctID = logs.args.fctId;
-      const proposedOwner = logs.args.proposedOwner;
-      log.info('Fincontract: ' + fctID);
-      log.info('Issued for: ' + proposedOwner);
-      return fctID;
-    });
+    return this.sender
+      .send('issueFor', args)
+      .watch({event: 'IssuedFor'}, logs => {
+        const fctID = logs.args.fctId;
+        const proposedOwner = logs.args.proposedOwner;
+        log.info('Fincontract: ' + fctID);
+        log.info('Issued for: ' + proposedOwner);
+        return fctID;
+      });
   }
 
   deployFincontract(descID) {
-    return this.sender.send('createFincontract', [descID], {event: 'CreatedBy'}, logs => {
-      const fctID = logs.args.fctId;
-      const owner = logs.args.user;
-      log.info('Fincontract: ' + fctID);
-      log.info('Created for: ' + owner);
-      return fctID;
-    });
+    return this.sender
+      .send('createFincontract', [descID])
+      .watch({event: 'CreatedBy'}, logs => {
+        const fctID = logs.args.fctId;
+        const owner = logs.args.user;
+        log.info('Fincontract: ' + fctID);
+        log.info('Created for: ' + owner);
+        return fctID;
+      });
   }
 }

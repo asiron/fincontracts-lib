@@ -55,6 +55,7 @@ export default class Fetcher {
       that.marketplace.getFincontractInfo(fctID, (err, fctInfo) => {
         if (err || !parseInt(fctInfo[0], 16)) {
           reject(Error('Contract was not found!'));
+          return;
         }
         resolve(fctInfo);
       });
@@ -76,6 +77,7 @@ export default class Fetcher {
       this.marketplace.getDescriptionInfo(descID, (err, info) => {
         if (err || !info.some(e => Boolean(parseInt(e, 16)))) {
           reject(Error('Description was empty!'));
+          return;
         }
 
         const primitive = Fetcher.Primitives[info[0]];

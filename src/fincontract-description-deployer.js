@@ -17,11 +17,13 @@ export default class DescriptionDeployer extends Visitor {
   }
 
   deployPrimitive(name, args) {
-    return this.sender.send(name, args, {event: 'PrimitiveStoredAt'}, logs => {
-      const primitiveId = logs.args.id;
-      log.info(name + ' primitive ID: ' + primitiveId);
-      return primitiveId;
-    });
+    return this.sender
+      .send(name, args)
+      .watch({event: 'PrimitiveStoredAt'}, logs => {
+        const primitiveId = logs.args.id;
+        log.info(name + ' primitive ID: ' + primitiveId);
+        return primitiveId;
+      });
   }
 
   processAndNode(node, left, right) {

@@ -1,9 +1,5 @@
 - fincontract execution
-	- join (executes contract)
-	- join will trigger 
-		- Executed event in case the contract was fully executed
-		- Deleted event in case there was Timebound/Or node that postponed the execution
-		- nothing (execution most likely has thrown an exception OR out of gas error)
-
+	-chooseOr
+	
 - move logic to a web interface in Meteor
 - fix the problem with logger

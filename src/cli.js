@@ -4,6 +4,7 @@ import {FincontractMarketplace} from '../contracts/bin/marketplace';
 import Serializer from './fincontract-serializer';
 import Evaluator from './fincontract-evaluator';
 import Deployer from './fincontract-deployer';
+import Executor from './fincontract-executor';
 import Examples from './fincontract-examples';
 import Fetcher from './fincontract-fetcher';
 import Parser from './fincontract-parser';
@@ -33,7 +34,7 @@ const parseBigNum = str => {
   try {
     return new BigNumber(str);
   } catch (err) {
-    cli.log(error('Not a number!'));
+    cli.log(error('Error: Not a number!'));
   }
 };
 const zfill = (num, len) => (Array(len).join('0') + num).slice(-len);
@@ -60,11 +61,12 @@ const checkAndRegisterAccount = () => {
   if (marketplace.isRegistered.call()) {
     cli.log(info('You are already registered!'));
   }
-  const s = new Sender(marketplace, web3);
-  s.send('register', [], {event: 'Registered'}, logs => {
-    cli.log(chalk.blue(`Registered account: ${logs.args.user}`));
-    return logs.args.user;
-  });
+  new Sender(marketplace, web3)
+    .send('register', [])
+    .watch({event: 'Registered'}, logs => {
+      cli.log(chalk.blue(`Registered account: ${logs.args.user}`));
+      return logs.args.user;
+    });
 };
 
 const printFincontract = (name, fincontract, detailed) => {
@@ -164,6 +166,7 @@ cli
   .option('-i, --issue <address>', 'Issues the fincontract after deploying to given address')
   .option('-s, --save  <name>', 'Saves the contract after deploying to local storage')
   .option('--overwrite', 'Overwrites the contract if it already exists with same name!')
+  .types({string: ['i', 'issue']})
   .description('Creates fincontract and deploys it to the blockchain')
   .validate(isNodeConnected)
   .action((args, cb) => {
@@ -188,6 +191,32 @@ cli
     promise.catch(err => cli.log(error(err)));
     cb();
   });
+
+cli
+  .command('join-fincontract <id>')
+  .autocomplete({data: () => storage.getFincontractIDs()})
+  .option('-o, --or [choice]', 'Select sub-fincontract from a root OR node', ['first', 'second'])
+  .types({string: ['_']})
+  .validate(isNodeConnected)
+  .description('Joins a fincontract from currently selected account')
+  .action((args, cb) => {
+    const exec = new Executor(marketplace, web3);
+    const id = parseAddress(args.id);
+    
+    let promise;
+    const choice = args.options.or;
+    if (['first', 'second'].includes(choice)) {
+      const mapping = {first: 1, second: 0};
+      promise = exec.choose(id, mapping[choice]);
+    } else {
+      promise = exec.join(id);
+    }
+    promise
+      .then(res => cli.log(info(JSON.stringify(res))))
+      .catch(err => cli.log(error(err)));
+    cb();
+  });
+
 
 cli
   .command('pull-fincontract <id>')

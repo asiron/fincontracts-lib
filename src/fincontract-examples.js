@@ -44,9 +44,9 @@ export default class Examples {
 
   setGateways(gatewayint, gatewaybool) {
     const p1 = this.deploy('setGatewayI', [gatewayint],
-      {filter: 'latest'}, () => log.info('gatewayI set to ' + gatewayint));
+      {block: 'latest'}, () => log.info('gatewayI set to ' + gatewayint));
     const p2 = this.deploy('setGatewayB', [gatewaybool],
-      {filter: 'latest'}, () => log.info('gatewayB set to ' + gatewaybool));
+      {block: 'latest'}, () => log.info('gatewayB set to ' + gatewaybool));
     return Promise.all([p1, p2]);
   }
 
@@ -62,6 +62,6 @@ export default class Examples {
 
   deploy(name, args, event, block) {
     const s = new Sender(this.marketplace, this.web3);
-    return s.send(name, args, event, block);
+    return s.send(name, args).watch(event, block);
   }
 }

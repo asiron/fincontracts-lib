@@ -121,10 +121,11 @@ class GatewayVisitor extends CollectingVisitor {
       throw new Error(`Gateway's address was 0x0`);
     }
     const gateway = Gateway(this.web3).at(address);
-    const s = new Sender(gateway, this.web3);
-    return s.send('update', [], {filter: 'latest'}, () => {
-      log.info('Finished updating ' + type + ' gateway at: ' + address);
-    });
+    return new Sender(gateway, this.web3)
+      .send('update', [])
+      .watch({block: 'latest'}, () => {
+        log.info('Finished updating ' + type + ' gateway at: ' + address);
+      });
   }
 
   processIfNode(node, left, right) {
