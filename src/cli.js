@@ -60,6 +60,7 @@ const connectToEthereumNode = host => {
 const checkAndRegisterAccount = () => {
   if (marketplace.isRegistered.call()) {
     cli.log(info('You are already registered!'));
+    return;
   }
   new Sender(marketplace, web3)
     .send('register', [])
@@ -103,7 +104,7 @@ const autocompleteAccounts = () => {
 connectToEthereumNode('localhost:8000');
 
 cli
-  .command('connect <host>')
+  .command('connect <host>').alias('c')
   .autocomplete(['localhost:8000'])
   .description('Connnects to a local Ethereum node')
   .action((args, cb) => {
@@ -112,7 +113,7 @@ cli
   });
 
 cli
-  .command('register')
+  .command('register').alias('r')
   .validate(isNodeConnected)
   .description('Registers currently selected account')
   .action((args, cb) => {
@@ -121,7 +122,7 @@ cli
   });
 
 cli
-  .command('show-balance')
+  .command('show-balance').alias('sb')
   .validate(isNodeConnected)
   .description('Shows balance of currently selected account')
   .action((args, cb) => {
@@ -131,7 +132,7 @@ cli
   });
 
 cli
-  .command('select-account <index-or-address>')
+  .command('select-account <index-or-address>').alias('sa')
   .autocomplete({data: () => autocompleteAccounts()})
   .description('Selects an Ethereum account for sending transactions')
   .validate(isNodeConnected)
@@ -151,7 +152,7 @@ cli
   });
 
 cli
-  .command('list-accounts')
+  .command('list-accounts').alias('la')
   .description('Lists Ethereum accounts')
   .action((args, cb) => {
     cli.log(info('Available Ethereum accounts:'));
@@ -162,7 +163,7 @@ cli
   });
 
 cli
-  .command('create-fincontract <expr>')
+  .command('create-fincontract <expr>').alias('cf')
   .option('-i, --issue <address>', 'Issues the fincontract after deploying to given address')
   .option('-s, --save  <name>', 'Saves the contract after deploying to local storage')
   .option('--overwrite', 'Overwrites the contract if it already exists with same name!')
@@ -193,7 +194,7 @@ cli
   });
 
 cli
-  .command('join-fincontract <id>')
+  .command('join-fincontract <id>').alias('jf')
   .autocomplete({data: () => storage.getFincontractIDs()})
   .option('-o, --or [choice]', 'Select sub-fincontract from a root OR node', ['first', 'second'])
   .types({string: ['_']})
@@ -219,7 +220,7 @@ cli
 
 
 cli
-  .command('pull-fincontract <id>')
+  .command('pull-fincontract <id>').alias('pf')
   .autocomplete({data: () => storage.getFincontractIDs()})
   .option('-s, --save <name>', 'Save fincontract description as [name]')
   .option('-e, --eval <method>', 'Evaluate fincontract using a method', ['direct', 'estimate'])
@@ -270,7 +271,7 @@ cli
   });
 
 cli
-  .command('show-fincontract <name>')
+  .command('show-fincontract <name>').alias('sf')
   .autocomplete({data: () => Object.keys(storage.getFincontracts())})
   .validate(isNodeConnected)
   .description('Shows detailed information about a saved fincontract')
@@ -286,7 +287,7 @@ cli
   });
 
 cli
-  .command('list-fincontracts')
+  .command('list-fincontracts').alias('lf')
   .option('-d, --detail', 'Lists detailed description of the fincontracts')
   .validate(isNodeConnected)
   .description('Lists all saved fincontracts')
@@ -299,7 +300,7 @@ cli
   });
 
 cli
-  .command('delete-settings')
+  .command('delete-settings').alias('ds')
   .description('Wipes out all user settings (autocomplete, saved fincontracts)')
   .action(function (args, cb) {
     this.prompt({
@@ -318,7 +319,7 @@ cli
   });
 
 cli
-  .command('example <index>')
+  .command('example <index>').alias('ex')
   .autocomplete(Examples.AllExamples)
   .validate(isNodeConnected)
   .description('Deploys one of the examples from marketplace smart contract')
