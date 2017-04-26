@@ -8,13 +8,13 @@ const wasTransactionIncluded = (web3, blockHash, tx) => {
 };
 
 class Transaction {
-  constructor(promise, contract, web3) {
-    this.promise = promise;
+  constructor(sent, contract, web3) {
+    this.sent = sent;
     this.contract = contract;
     this.web3 = web3;
   }
 
-  watch(filter, callback) {
+  async watch(filter, callback) {
     let listener = null;
     let predicate = null;
     if (filter.event) {
@@ -25,11 +25,11 @@ class Transaction {
       listener = this.web3.eth.filter(filter.block);
       predicate = (tx, logs) => wasTransactionIncluded(this.web3, logs, tx);
     } else {
-      this.promise = Promise.reject(Error(`Wrong filter, was: ${filter}`));
+      this.sent = Promise.reject(Error(`Wrong filter, was: ${filter}`));
       return this;
     }
 
-    return this.promise.then(tx => {
+    const makeListener = tx => {
       return new Promise((resolve, reject) => {
         listener.watch((err, logs) => {
           if (err) {
@@ -43,7 +43,11 @@ class Transaction {
           }
         });
       });
-    });
+    };
+    
+    const tx = await this.sent;
+    return makeListener(tx);
+
   }
 }
 
@@ -70,8 +74,8 @@ export default class Sender {
         resolve(tx);
       });
     };
-    const promise = new Promise((resolve, reject) => executor(resolve, reject));
-    return new Transaction(promise, this.contract, this.web3);
+    const sent = new Promise((resolve, reject) => executor(resolve, reject));
+    return new Transaction(sent, this.contract, this.web3);
   }
 
 }
