@@ -12,20 +12,19 @@ export default class Deployer {
     this.marketplace = marketplace;
   }
 
-  deploy(description) {
-    return this.dd.deployDescription(description)
-      .then(descID => this.deployFincontract(descID));
+  async deploy(description) {
+    const descID = await this.dd.deployDescription(description);
+    return this.deployFincontract(descID);
   }
 
-  issue(description, proposedOwner) {
-    return this.deploy(description)
-      .then(fctID => this.issueFincontract(fctID, proposedOwner));
+  async issue(description, proposedOwner) {
+    const fctID = await this.deploy(description);
+    return this.issueFincontract(fctID, proposedOwner);
   }
 
   issueFincontract(fctID, proposedOwner) {
-    const args = [fctID, proposedOwner];
     return this.sender
-      .send('issueFor', args)
+      .send('issueFor', [fctID, proposedOwner])
       .watch({event: 'IssuedFor'}, logs => {
         const fctID = logs.args.fctId;
         const proposedOwner = logs.args.proposedOwner;

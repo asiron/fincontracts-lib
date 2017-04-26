@@ -44,9 +44,9 @@ export default class Examples {
 
   setGateways(gatewayint, gatewaybool) {
     const p1 = this.deploy('setGatewayI', [gatewayint],
-      {block: 'latest'}, () => log.info('gatewayI set to ' + gatewayint));
+      {block: 'latest'}, () => log.info(`gatewayI set to ${gatewayint}`));
     const p2 = this.deploy('setGatewayB', [gatewaybool],
-      {block: 'latest'}, () => log.info('gatewayB set to ' + gatewaybool));
+      {block: 'latest'}, () => log.info(`gatewayB set to ${gatewaybool}`));
     return Promise.all([p1, p2]);
   }
 
@@ -54,8 +54,8 @@ export default class Examples {
     return this.deploy(name, args, {event: 'CreatedBy'}, logs => {
       const fctID = logs.args.fctId;
       const owner = logs.args.user;
-      log.info('Fincontract: ' + fctID);
-      log.info('Created for: ' + owner);
+      log.info(`Fincontract: ${fctID}`);
+      log.info(`Created for: ${owner}`);
       return fctID;
     });
   }

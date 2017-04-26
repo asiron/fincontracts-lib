@@ -1,8 +1,34 @@
-import {FincOrNode} from './fincontract';
+import {FincOrNode, FincScaleNode, FincTimeboundNode} from './fincontract';
 import Fetcher from './fincontract-fetcher';
 import Sender from './tx-sender';
 
 const TIMEOUT = 240000;
+
+function isOrNode(root) {
+  const OR = FincOrNode.constructor;
+  const SCALE = FincScaleNode.constructor;
+  const TIMEBOUND = FincTimeboundNode.constructor;
+  if (root === OR) {
+    return true;
+  }
+  const child = root.children[0];
+  const grandchild = child.children[0];
+  if (root === SCALE) {
+    if (child === OR) {
+      return true;
+    } else if (child === TIMEBOUND && grandchild === OR) {
+      return true;
+    }
+  }
+  if (root === TIMEBOUND) {
+    if (child === OR) {
+      return true;
+    } else if (child === SCALE && grandchild === OR) {
+      return true;
+    }
+  }
+  return false;
+}
 
 export default class Executor {
 
@@ -13,65 +39,49 @@ export default class Executor {
     this.sender = new Sender(marketplace, web3);
   }
 
-  join(fctID) {
-    const that = this;
-    return this.fetcher
-      .pullFincontract(fctID)
-      .then(f => {
-        const account = this.web3.eth.defaultAccount;
-        const newOwner = f.proposedOwner;
-        const issued = (newOwner === account) || (parseInt(newOwner, 16) === 0);
-        if (!issued) {
-          throw new Error('Cannot own this fincontract');
-        }
-        return f;
-      })
-      .then(f => {
-        const sent = that.sender.send('join', [f.id]);
-        return that.watchExecution(sent);
-      });
+  async join(fctID) {
+    const f = await this.fetcher.pullFincontract(fctID);
+    const account = this.web3.eth.defaultAccount;
+    const newOwner = f.proposedOwner;
+    const issued = (newOwner === account) || (parseInt(newOwner, 16) === 0);
+    if (!issued) {
+      throw new Error('Cannot own this f');
+    }
+    const sent = this.sender.send('join', [f.id]);
+    return this.watchExecution(sent);
   }
 
-  choose(fctID, choice) {
-    const that = this;
-    return this.fetcher
-      .pullFincontract(fctID)
-      .then(f => {
-        const isOrNode = (f.rootDescription.children[0] === FincOrNode.construtor);
-        if (!isOrNode) {
-          throw new Error('Root node of fincontract is not an OR node!');
-        }
-        const account = this.web3.eth.defaultAccount;
-        const isOwner = (account === f.owner);
-        if (!isOwner) {
-          throw new Error('Only owner can choose a sub-fincontract!');
-        }
-        return f;
-      })
-      .then(f => {
-        const sent = that.sender.send('executeOr', [f.id, choice]);
-        return that.watchExecution(sent);
-      });
+  async choose(fctID, choice) {
+    const f = await this.fetcher.pullFincontract(fctID);
+    if (!isOrNode(f.rootDescription)) {
+      throw new Error('Root node of fincontract is not an OR node!');
+    }
+    const account = this.web3.eth.defaultAccount;
+    const isOwner = (account === f.owner);
+    if (!isOwner) {
+      throw new Error('Only owner can choose a sub-fincontract!');
+    }
+    const sent = this.sender.send('executeOr', [f.id, choice]);
+    return this.watchExecution(sent);
   }
 
-  watchExecution(sentTransaction) {
-    const that = this;
+  async watchExecution(sentTransaction) {
     const executed = sentTransaction.watch({event: 'Executed'}, logs => {
-      return Promise.resolve({type: 'executed', id: logs.args.fctId});
+      return {type: 'executed', id: logs.args.fctId};
     });
     const deferred = sentTransaction.watch({event: 'Deleted'}, logs => {
-      return that.processDeferredExecution(logs.args.fctId);
+      return this.processDeferredExecution(logs.args.fctId);
     });
-    const timeout = sentTransaction.promise.then(() => new Promise((resolve, reject) => {
+    await sentTransaction.promise;
+    const timeout = new Promise((resolve, reject) => {
       setTimeout(reject, TIMEOUT, Error('Execution timed out! Probably threw!'));
-    }));
+    });
     return Promise.race([executed, deferred, timeout]);
   }
 
   processDeferredExecution(deleted) {
-    const that = this;
     return new Promise((resolve, reject) => {
-      that.marketplace.CreatedBy().get((err, events) => {
+      this.marketplace.CreatedBy().get((err, events) => {
         if (err) {
           reject(Error(`${err} when getting new Fincontract ids`));
           return;

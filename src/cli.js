@@ -166,30 +166,34 @@ cli
   .command('create-fincontract <expr>').alias('cf')
   .option('-i, --issue <address>', 'Issues the fincontract after deploying to given address')
   .option('-s, --save  <name>', 'Saves the contract after deploying to local storage')
-  .option('--overwrite', 'Overwrites the contract if it already exists with same name!')
+  .option('-ow, --overwrite', 'Overwrites the contract if it already exists with same name!')
   .types({string: ['i', 'issue']})
   .description('Creates fincontract and deploys it to the blockchain')
   .validate(isNodeConnected)
-  .action((args, cb) => {
+  .action(async (args, cb) => {
+    const expression = args.expr;
     const p = new Parser();
     const d = new Deployer(marketplace, web3);
+    try {
+      let createdFincontractID;
+      const desc = await p.parse(expression);
+      if (args.options.issue) {
+        const proposedOwner = parseAddress(args.options.issue);
+        createdFincontractID = await d.issue(desc, proposedOwner);
+      } else {
+        createdFincontractID = await d.deploy(desc);
+      }
 
-    let promise = p.parse(args.expr);
-    if (args.options.issue) {
-      const proposedOwner = parseAddress(args.options.issue);
-      promise = promise.then(desc => d.issue(desc, proposedOwner));
-    } else {
-      promise = promise.then(desc => d.deploy(desc));
+      if (args.options.save) {
+        const name = args.options.save;
+        const ow = args.options.overwrite;
+        const f = new Fetcher(marketplace);
+        const fincontract = await f.pullFincontract(createdFincontractID);
+        saveFincontract(fincontract, name, ow);
+      }
+    } catch (err) {
+      cli.log(error(err));
     }
-
-    if (args.options.save) {
-      const name = args.options.save;
-      const ow = args.options.overwrite;
-      const f = new Fetcher(marketplace);
-      promise = promise.then(fctID => f.pullFincontract(fctID))
-        .then(fincontract => saveFincontract(fincontract, name, ow));
-    }
-    promise.catch(err => cli.log(error(err)));
     cb();
   });
 
@@ -200,21 +204,23 @@ cli
   .types({string: ['_']})
   .validate(isNodeConnected)
   .description('Joins a fincontract from currently selected account')
-  .action((args, cb) => {
+  .action(async (args, cb) => {
     const exec = new Executor(marketplace, web3);
     const id = parseAddress(args.id);
 
-    let promise;
-    const choice = args.options.or;
-    if (['first', 'second'].includes(choice)) {
-      const mapping = {first: 1, second: 0};
-      promise = exec.choose(id, mapping[choice]);
-    } else {
-      promise = exec.join(id);
+    try {
+      let executed;
+      const choice = args.options.or;
+      if (['first', 'second'].includes(choice)) {
+        const mapping = {first: 1, second: 0};
+        executed = await exec.choose(id, mapping[choice]);
+      } else {
+        executed = await exec.join(id);
+      }
+      cli.log(info(JSON.stringify(executed)));
+    } catch (err) {
+      cli.log(error(err));
     }
-    promise
-      .then(res => cli.log(info(JSON.stringify(res))))
-      .catch(err => cli.log(error(err)));
     cb();
   });
 
@@ -228,44 +234,34 @@ cli
   .types({string: ['_']})
   .description('Pulls contract from blockchain.')
   .validate(isNodeConnected)
-  .action((args, cb) => {
+  .action(async (args, cb) => {
     cli.log(args);
+    try {
+      const id = parseAddress(args.id);
+      const f = new Fetcher(marketplace);
 
-    const id = parseAddress(args.id);
-    const f = new Fetcher(marketplace);
-
-    f.pullFincontract(id)
-      .then(fincontract => {
-        if (storage.addFincontractID(id)) {
-          cli.log(info('ID added to autocomplete!'));
-        }
-        return Promise.resolve(fincontract);
-      })
-      .then(fincontract => {
-        if (args.options.save) {
-          const name = args.options.save;
-          const ow = args.options.overwrite;
-          saveFincontract(fincontract, name, ow);
-        }
-        return Promise.resolve(fincontract);
-      })
-      .then(fincontract => {
-        if (args.options.eval) {
-          const e = new Evaluator(web3);
-          const base = args.options.convert || 'USD';
-          const method = args.options.eval;
-          return e.evaluate(fincontract, {method})
-            .then(list => Currency.convertToJSON(list))
-            .then(currencies => {
-              cli.log(chalk.cyan(JSON.stringify(currencies)));
-              return currencies;
-            })
-            .then(currencies => Currency.changeAllCurrencies(base, currencies))
-            .then(exchanged => cli.log(chalk.cyan(JSON.stringify(exchanged))));
-        }
-      })
-      .catch(err => cli.log(error(err)));
-
+      const fincontract = await f.pullFincontract(id);
+      if (storage.addFincontractID(id)) {
+        cli.log(info('ID added to autocomplete!'));
+      }
+      if (args.options.save) {
+        const name = args.options.save;
+        const ow = args.options.overwrite;
+        saveFincontract(fincontract, name, ow);
+      }
+      if (args.options.eval) {
+        const e = new Evaluator(web3);
+        const base = args.options.convert || 'USD';
+        const method = args.options.eval;
+        const evaluated = await e.evaluate(fincontract, {method});
+        const currencies = Currency.convertToJSON(evaluated);
+        cli.log(info(JSON.stringify(currencies)));
+        const exchanged = await Currency.changeAllCurrencies(base, currencies);
+        cli.log(info(JSON.stringify(exchanged)));
+      }
+    } catch (err) {
+      cli.log(error(err));
+    }
     cb();
   });
 
@@ -322,14 +318,16 @@ cli
   .autocomplete(Examples.AllExamples)
   .validate(isNodeConnected)
   .description('Deploys one of the examples from marketplace smart contract')
-  .action((args, cb) => {
-    const ex = new Examples(marketplace, web3);
-    ex.runExample(args.index).then(fctID => {
+  .action(async (args, cb) => {
+    try {
+      const ex = new Examples(marketplace, web3);
+      const fctID = await ex.runExample(args.index);
       if (storage.addFincontractID(fctID)) {
         cli.log(info('ID added to autocomplete!'));
       }
-    }).catch(err => cli.log(error(err)));
-
+    } catch (err) {
+      cli.log(error(err));
+    }
     cb();
   });
 

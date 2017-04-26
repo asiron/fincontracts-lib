@@ -26,53 +26,39 @@ export default class DescriptionDeployer extends Visitor {
       });
   }
 
-  processAndNode(node, left, right) {
-    const that = this;
-    return Promise.all([left, right])
-      .then(ids => that.deployPrimitive('And', ids));
+  async processAndNode(node, left, right) {
+    const children = await Promise.all([left, right]);
+    return this.deployPrimitive('And', children);
   }
 
-  processIfNode(node, left, right) {
-    const that = this;
-    return Promise.all([left, right]).then(ids => {
-      const args = [node.gatewayAddress].concat(ids);
-      return that.deployPrimitive('If', args);
-    });
+  async processIfNode(node, left, right) {
+    const children = await Promise.all([left, right]);
+    const args = [node.gatewayAddress].concat(children);
+    return this.deployPrimitive('If', args);
   }
 
-  processOrNode(node, left, right) {
-    const that = this;
-    return Promise.all([left, right])
-      .then(ids => that.deployPrimitive('Or', ids));
+  async processOrNode(node, left, right) {
+    const children = await Promise.all([left, right]);
+    return this.deployPrimitive('Or', children);
   }
 
-  processTimeboundNode(node, child) {
-    const that = this;
-    return child.then(primitiveId => {
-      const args = [node.lowerBound, node.upperBound, primitiveId];
-      return that.deployPrimitive('Timebound', args);
-    });
+  async processTimeboundNode(node, child) {
+    const args = [node.lowerBound, node.upperBound, await child];
+    return this.deployPrimitive('Timebound', args);
   }
 
-  processGiveNode(node, child) {
-    const that = this;
-    return child.then(primitiveId => that.deployPrimitive('Give', [primitiveId]));
+  async processGiveNode(node, child) {
+    return this.deployPrimitive('Give', [await child]);
   }
 
-  processScaleObsNode(node, child) {
-    const that = this;
-    return child.then(primitiveId => {
-      const args = [node.gatewayAddress, primitiveId];
-      return that.deployPrimitive('ScaleObs', args);
-    });
+  async processScaleObsNode(node, child) {
+    const args = [node.gatewayAddress, await child];
+    return this.deployPrimitive('ScaleObs', args);
   }
 
-  processScaleNode(node, child) {
-    const that = this;
-    return child.then(primitiveId => {
-      const args = [node.scale, primitiveId];
-      return that.deployPrimitive('Scale', args);
-    });
+  async processScaleNode(node, child) {
+    const args = [node.scale, await child];
+    return this.deployPrimitive('Scale', args);
   }
 
   processOneNode(node) {

@@ -66,7 +66,7 @@ export default class Fetcher {
     childrenIds = childrenIds.map(id => this.pullDescription(id));
     childrenIds = await Promise.all(childrenIds);
 
-    return await this.constructNode(descInfo, childrenIds);
+    return this.constructNode(descInfo, childrenIds);
   }
 
   constructNode(descInfo, childrenIds) {
@@ -111,38 +111,4 @@ export default class Fetcher {
     });
   }
 
-  // pullDescription(descID) {
-  //   return new Promise((resolve, reject) => {
-  //     this.marketplace.getDescriptionInfo(descID, (err, info) => {
-  //       if (err || !info.some(e => Boolean(parseInt(e, 16)))) {
-  //         reject(Error('Description was empty!'));
-  //         return;
-  //       }
-
-  //       const primitive = Fetcher.Primitives[info[0]];
-
-  //       let childrenIds = info.slice(2, 2 + primitive.childrenCount);
-  //       childrenIds = childrenIds.map(id => this.pullDescription(id));
-  //       childrenIds = Promise.all(childrenIds);
-  //       childrenIds.then(ids => {
-  //         let currentNode = primitive.builder(info, ...ids);
-
-  //         // If scale is present, then build node for it above the current one
-  //         const scale = parseInt(info[4], 10);
-  //         currentNode = (scale === 1) ?
-  //           currentNode :
-  //           new finc.FincScaleNode(currentNode, scale);
-
-  //         // If lowerBound is not 0, then most likely we have a timebound node
-  //         const lowerBound = parseInt(info[6], 10);
-  //         const upperBound = parseInt(info[7], 10);
-  //         currentNode = (lowerBound === 0) ?
-  //           currentNode :
-  //           new finc.FincTimeboundNode(currentNode, lowerBound, upperBound);
-
-  //         resolve(currentNode);
-  //       });
-  //     });
-  //   });
-  // }
 }

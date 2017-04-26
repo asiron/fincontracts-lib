@@ -29,7 +29,7 @@ class Transaction {
       return this;
     }
 
-    const makeListener = tx => {
+    function makeListener(tx) {
       return new Promise((resolve, reject) => {
         listener.watch((err, logs) => {
           if (err) {
@@ -43,31 +43,31 @@ class Transaction {
           }
         });
       });
-    };
-    
+    }
+
     const tx = await this.sent;
     return makeListener(tx);
-
   }
+
 }
 
 export default class Sender {
+
   constructor(contract, web3) {
     this.contract = contract;
     this.web3 = web3;
   }
 
   send(name, args) {
-    const that = this;
     const executor = (resolve, reject) => {
-      const method = that.contract[name];
+      const method = this.contract[name];
       method.sendTransaction(...args, {gas: GAS}, (err, tx) => {
         if (err) {
           reject(`${err} at transaction '${name}' with args: ${args}`);
           return;
         }
         log.info(`${name} transaction was sent. HASH: ${tx}`);
-        if (!that.web3.eth.getTransaction(tx)) {
+        if (!this.web3.eth.getTransaction(tx)) {
           log.warn(`Transaction was lost! HASH: ${tx}`);
           return executor(resolve, reject);
         }

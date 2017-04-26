@@ -145,15 +145,14 @@ export default class Evaluator {
     this.web3 = web3;
   }
 
-  evaluate(fincontract, options) {
+  async evaluate(fincontract, options) {
     const root = fincontract.rootDescription;
     if (options.method === 'direct') {
       const evaluators = makeDirectEvaluators(this.web3);
       const ev = new EvaluatorVisitor(evaluators);
       const gv = new GatewayVisitor(this.web3);
-      return gv.updateAllGateways(root).then(
-        () => Promise.resolve(ev.visit(root))
-      );
+      await gv.updateAllGateways(root);
+      return Promise.resolve(ev.visit(root));
     } else if (options.method === 'estimate') {
       const evaluators = makeEstimationEvaluators();
       const ev = new EvaluatorVisitor(evaluators);
