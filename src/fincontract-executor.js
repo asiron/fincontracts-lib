@@ -18,12 +18,12 @@ export default class Executor {
     return this.fetcher
       .pullFincontract(fctID)
       .then(f => {
-        const account = this.web3.eth.defaultAccount
+        const account = this.web3.eth.defaultAccount;
         const newOwner = f.proposedOwner;
         const issued = (newOwner === account) || (parseInt(newOwner, 16) === 0);
         if (!issued) {
           throw new Error('Cannot own this fincontract');
-        } 
+        }
         return f;
       })
       .then(f => {
@@ -50,7 +50,7 @@ export default class Executor {
       })
       .then(f => {
         const sent = that.sender.send('executeOr', [f.id, choice]);
-        return that.watchExecution(sent);  
+        return that.watchExecution(sent);
       });
   }
 
@@ -77,7 +77,7 @@ export default class Executor {
           return;
         }
         const newFincontracts = events.reduce((x, {args: {fctId}}) => {
-          return [...x, fctId]
+          return [...x, fctId];
         }, []);
         resolve({type: 'deferred', deleted, newFincontracts});
       });

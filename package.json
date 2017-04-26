@@ -3,10 +3,11 @@
   "version": "1.0.0",
   "scripts": {
     "build": "babel src -d lib",
-    "test" : "xo"
+    "test": "xo"
   },
   "devDependencies": {
     "babel-cli": "^6.0.0",
+    "babel-plugin-transform-async-to-generator": "^6.24.1",
     "babel-preset-env": "^1.1.8",
     "xo": "^0.18.1"
   },

@@ -203,7 +203,7 @@ cli
   .action((args, cb) => {
     const exec = new Executor(marketplace, web3);
     const id = parseAddress(args.id);
-    
+
     let promise;
     const choice = args.options.or;
     if (['first', 'second'].includes(choice)) {
@@ -217,7 +217,6 @@ cli
       .catch(err => cli.log(error(err)));
     cb();
   });
-
 
 cli
   .command('pull-fincontract <id>').alias('pf')
