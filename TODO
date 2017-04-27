@@ -1,5 +1,4 @@
-- fincontract execution
-	-chooseOr
+- join fincontract -> 
 	
 - move logic to a web interface in Meteor
 - fix the problem with logger

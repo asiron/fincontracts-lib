@@ -30,47 +30,40 @@ const ok = msg => chalk.green(`${figures.tick} ${msg}`);
 cli.localStorage('fincontract-client');
 const storage = new Storage(cli.localStorage);
 
-const parseBigNum = str => {
+function parseBigNum(str) {
   try {
     return new BigNumber(str);
   } catch (err) {
     cli.log(error('Error: Not a number!'));
   }
-};
+}
 const zfill = (num, len) => (Array(len).join('0') + num).slice(-len);
-const parseAddress = str => {
+function parseAddress(str) {
   const id = parseBigNum(str) || '0';
   return '0x' + zfill(id.toString(16), 64);
-};
+}
 
 const isNodeConnected = () => web3.isConnected() || error('Node is not connected');
-const connectToEthereumNode = host => {
-  const url = `http://${host}`;
+function connectToEthereumNode(url) {
   const provider = new web3.providers.HttpProvider(url);
   web3.setProvider(provider);
   if (isNodeConnected() === true) {
     marketplace = FincontractMarketplace(web3);
     web3.eth.defaultAccount = web3.eth.coinbase;
-    cli.log(ok(`Connected to node: ${url}`));
-  } else {
-    cli.log(error(`Did NOT connect, is node running at ${url} ?`));
+    return true;
   }
-};
+  return false;
+}
 
-const checkAndRegisterAccount = () => {
-  if (marketplace.isRegistered.call()) {
-    cli.log(info('You are already registered!'));
-    return;
+async function checkAndRegisterAccount() {
+  if (!marketplace.isRegistered.call()) {
+    return new Sender(marketplace, web3)
+      .send('register', [])
+      .watch({event: 'Registered'}, logs => logs.args.user);
   }
-  new Sender(marketplace, web3)
-    .send('register', [])
-    .watch({event: 'Registered'}, logs => {
-      cli.log(chalk.blue(`Registered account: ${logs.args.user}`));
-      return logs.args.user;
-    });
-};
+}
 
-const printFincontract = (name, fincontract, detailed) => {
+function printFincontract(name, fincontract, detailed) {
   cli.log(info(`Fincontract:\t ${name}`));
   cli.log(info(`ID:\t ${fincontract.id}`));
   if (detailed) {
@@ -80,9 +73,9 @@ const printFincontract = (name, fincontract, detailed) => {
     cli.log(info(`Description:\t\t ${fincontract.description}`));
   }
   cli.log('');
-};
+}
 
-const saveFincontract = (fincontract, name, overwrite) => {
+function saveFincontract(fincontract, name, overwrite) {
   const srz = new Serializer();
   const serialized = srz.serialize(fincontract);
   if (storage.addFincontract(name, serialized, overwrite)) {
@@ -90,25 +83,30 @@ const saveFincontract = (fincontract, name, overwrite) => {
   } else {
     cli.log(warn('Fincontract with this name already exists!'));
   }
-};
+}
 
-const autocompleteAccounts = () => {
+function autocompleteAccounts() {
   if (!web3.isConnected()) {
     return [];
   }
   const accounts = web3.eth.accounts;
   const indicies = [...Array(accounts.length).keys()].map(x => x.toString());
   return [...indicies, ...accounts];
-};
+}
 
-connectToEthereumNode('localhost:8000');
+connectToEthereumNode('http://localhost:8000');
 
 cli
   .command('connect <host>').alias('c')
   .autocomplete(['localhost:8000'])
   .description('Connnects to a local Ethereum node')
   .action((args, cb) => {
-    connectToEthereumNode(args.host);
+    const url = `http://${args.host}`;
+    if (connectToEthereumNode(url)) {
+      cli.log(ok(`Connected to node: ${url}`));
+    } else {
+      cli.log(error(`Did NOT connect, is node running at ${url} ?`));
+    }
     cb();
   });
 
@@ -116,8 +114,13 @@ cli
   .command('register').alias('r')
   .validate(isNodeConnected)
   .description('Registers currently selected account')
-  .action((args, cb) => {
-    checkAndRegisterAccount();
+  .action(async (args, cb) => {
+    const user = await checkAndRegisterAccount();
+    if (user) {
+      cli.log(info(`Registered account: ${user}`));
+    } else {
+      cli.log(warn(`You are already registered!`));
+    }
     cb();
   });
 
@@ -203,11 +206,10 @@ cli
   .option('-o, --or [choice]', 'Select sub-fincontract from a root OR node', ['first', 'second'])
   .types({string: ['_']})
   .validate(isNodeConnected)
-  .description('Joins a fincontract from currently selected account')
+  .description('Joins a fincontract from the currently selected account')
   .action(async (args, cb) => {
     const exec = new Executor(marketplace, web3);
     const id = parseAddress(args.id);
-
     try {
       let executed;
       const choice = args.options.or;
@@ -235,7 +237,6 @@ cli
   .description('Pulls contract from blockchain.')
   .validate(isNodeConnected)
   .action(async (args, cb) => {
-    cli.log(args);
     try {
       const id = parseAddress(args.id);
       const f = new Fetcher(marketplace);

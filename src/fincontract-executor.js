@@ -1,33 +1,27 @@
-import {FincOrNode, FincScaleNode, FincTimeboundNode} from './fincontract';
+import GatewayUpdater from './fincontract-gateway-updater';
 import Fetcher from './fincontract-fetcher';
 import Sender from './tx-sender';
+import {EmptyVisitor} from './fincontract-visitor';
 
-const TIMEOUT = 240000;
+const TIMEOUT = 90 * 1000;
 
-function isOrNode(root) {
-  const OR = FincOrNode.constructor;
-  const SCALE = FincScaleNode.constructor;
-  const TIMEBOUND = FincTimeboundNode.constructor;
-  if (root === OR) {
+class OrNodeChecker extends EmptyVisitor {
+
+  processOrNode() {
     return true;
   }
-  const child = root.children[0];
-  const grandchild = child.children[0];
-  if (root === SCALE) {
-    if (child === OR) {
-      return true;
-    } else if (child === TIMEBOUND && grandchild === OR) {
-      return true;
-    }
+
+  processTimeboundNode(node, child) {
+    return child;
   }
-  if (root === TIMEBOUND) {
-    if (child === OR) {
-      return true;
-    } else if (child === SCALE && grandchild === OR) {
-      return true;
-    }
+
+  processScaleNode(node, child) {
+    return child;
   }
-  return false;
+}
+
+function isOrNode(root) {
+  return new OrNodeChecker().visit(root);
 }
 
 export default class Executor {
@@ -40,19 +34,19 @@ export default class Executor {
   }
 
   async join(fctID) {
-    const f = await this.fetcher.pullFincontract(fctID);
+    const f = await this.pullThenUpdateGateways(fctID);
     const account = this.web3.eth.defaultAccount;
     const newOwner = f.proposedOwner;
     const issued = (newOwner === account) || (parseInt(newOwner, 16) === 0);
     if (!issued) {
-      throw new Error('Cannot own this f');
+      throw new Error('Cannot own this fincontract');
     }
     const sent = this.sender.send('join', [f.id]);
     return this.watchExecution(sent);
   }
 
   async choose(fctID, choice) {
-    const f = await this.fetcher.pullFincontract(fctID);
+    const f = await this.pullThenUpdateGateways(fctID);
     if (!isOrNode(f.rootDescription)) {
       throw new Error('Root node of fincontract is not an OR node!');
     }
@@ -92,5 +86,12 @@ export default class Executor {
         resolve({type: 'deferred', deleted, newFincontracts});
       });
     });
+  }
+
+  async pullThenUpdateGateways(fctID) {
+    const f = await this.fetcher.pullFincontract(fctID);
+    const gu = new GatewayUpdater(this.web3);
+    await gu.updateAllGateways(f.rootDescription);
+    return f;
   }
 }

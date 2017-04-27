@@ -1,23 +1,13 @@
 import {Gateway} from '../contracts/bin/gateway';
-import {Visitor, CollectingVisitor} from './fincontract-visitor';
-import Sender from './tx-sender';
+import {Visitor} from './fincontract-visitor';
 import {currencyCount} from './currency';
-
-const log = require('minilog')('eval');
-require('minilog').enable();
+import GatewayUpdater from './fincontract-gateway-updater';
 
 const makeArray = (size, obj) => Array.apply(null, Array(size)).map(() => obj);
 const flatten = arr => arr.reduce((a, b) => a.concat(b));
 const cross = (arr1, arr2) => arr1.map(a => arr2.map(b => [a, b]));
 const zip = (a1, a2) => a1.map((x, i) => [x, a2[i]]);
 const tupleMUL = i => i[0] * i[1];
-
-/*
- * TODO
-   - ScaleObs ranges should be applied here
-   - pull currency exchange rates data and calculate single USD value
-   - return a dictionary
- */
 
 const makeEstimationEvaluators = () => ({
   if: () => ([iA, iB]) => [Math.min(iA[0], iB[0]), Math.max(iA[1], iB[1])],
@@ -102,41 +92,6 @@ class EvaluatorVisitor extends Visitor {
   processUnknownNode() {
     throw new Error('Unknown case during evaluation');
   }
-
-}
-
-class GatewayVisitor extends CollectingVisitor {
-
-  constructor(web3) {
-    super();
-    this.web3 = web3;
-  }
-
-  updateAllGateways(node) {
-    return Promise.all(this.visit(node));
-  }
-
-  updateGateway(address, type) {
-    if (!parseInt(address, 16)) {
-      throw new Error(`Gateway's address was 0x0`);
-    }
-    const gateway = Gateway(this.web3).at(address);
-    return new Sender(gateway, this.web3)
-      .send('update', [])
-      .watch({block: 'latest'}, () => {
-        log.info('Finished updating ' + type + ' gateway at: ' + address);
-      });
-  }
-
-  processIfNode(node, left, right) {
-    const self = this.updateGateway(node.gatewayAddress, 'If');
-    return [...left, ...right, self];
-  }
-
-  processScaleObsNode(node, child) {
-    const self = this.updateGateway(node.gatewayAddress, 'ScaleObs');
-    return [...child, self];
-  }
 }
 
 export default class Evaluator {
@@ -146,17 +101,17 @@ export default class Evaluator {
   }
 
   async evaluate(fincontract, options) {
-    const root = fincontract.rootDescription;
+    const _root = fincontract.rootDescription;
     if (options.method === 'direct') {
       const evaluators = makeDirectEvaluators(this.web3);
       const ev = new EvaluatorVisitor(evaluators);
-      const gv = new GatewayVisitor(this.web3);
-      await gv.updateAllGateways(root);
-      return Promise.resolve(ev.visit(root));
+      const gu = new GatewayUpdater(this.web3);
+      await gu.updateAllGateways(_root);
+      return Promise.resolve(ev.visit(_root));
     } else if (options.method === 'estimate') {
       const evaluators = makeEstimationEvaluators();
       const ev = new EvaluatorVisitor(evaluators);
-      return Promise.resolve(ev.visit(root));
+      return Promise.resolve(ev.visit(_root));
     }
     return Promise.reject(Error('Wrong evaluation method'));
   }

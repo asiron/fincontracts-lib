@@ -61,11 +61,11 @@ export default class DescriptionDeployer extends Visitor {
     return this.deployPrimitive('Scale', args);
   }
 
-  processOneNode(node) {
+  async processOneNode(node) {
     return this.deployPrimitive('One', [node.currency]);
   }
 
-  processZeroNode() {
+  async processZeroNode() {
     return this.deployPrimitive('Zero', []);
   }
 

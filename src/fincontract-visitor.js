@@ -86,3 +86,16 @@ export class CollectingVisitor extends Visitor {
     return [];
   }
 }
+
+export class EmptyVisitor extends Visitor {
+
+  processAndNode() {}
+  processIfNode() {}
+  processOrNode() {}
+  processTimeboundNode() {}
+  processScaleObsNode() {}
+  processScaleNode() {}
+  processGiveNode() {}
+  processOneNode() {}
+  processZeroNode() {}
+}
