@@ -20,9 +20,7 @@ class OrNodeChecker extends EmptyVisitor {
   }
 }
 
-function isOrNode(root) {
-  return new OrNodeChecker().visit(root);
-}
+const isOrNode = root => new OrNodeChecker().visit(root);
 
 export default class Executor {
 
