@@ -8,26 +8,54 @@ import {EmptyVisitor} from './fincontract-visitor';
  * @typedef {Object} ExecutionResult
  * @property {String} type - type of the result (`executed` | `deferred`)
  * @property {String} deleted - id of the deleted Fincontract (32-byte address)
- * @property {Array<String>|undefined} newFincontracts - list of newly 
+ * @property {Array<String>|undefined} newFincontracts - list of newly
  *   created Fincontracts if the execution is `deferred`, otherwise undefined
  */
 
 /**
- * Time in seconds to trigger timeout error if nothing has happened
- * @type {Number}
+ * {@link OrNodeChecker} checks if there exist path from root node to the
+ * nearest Or node (see {@link FincOrNode}), while only passing through
+ * {@link FincTimeboundNode} and {@link FincScaleNode}. It's neccessary to check
+ * this before choosing a sub-fincontract (see {@link Executor#choose}), since
+ * the description tree on the blockchain does not have these explicit
+ * node types and rather they are embedded in every node. However, when pulling
+ * the contract down (see {@link Fetcher#pullFincontract}) we infer and
+ * construct these nodes. If we didn't check this ourselves and the top-level
+ * nodes is not an OR node, then the transaction would fail and the gas
+ * would not be refunded.
  */
-export const TIMEOUT = 90 * 1000;
+export class OrNodeChecker extends EmptyVisitor {
 
-class OrNodeChecker extends EmptyVisitor {
-
+  /**
+   * Called when processing {@link FincOrNode}. Returns true, because we have
+   * reached an OR node.
+   * @override
+   * @return {true}
+   */
   processOrNode() {
     return true;
   }
 
+  /**
+   * Called when processing {@link FincTimeboundNode}.
+   * Passes the child's result to the parent.
+   * @override
+   * @param  {FincNode} node - currently being processed node
+   * @param  {Boolean|null} child - result from processing its child
+   * @return {Boolean|null} - result from processing its child
+   */
   processTimeboundNode(node, child) {
     return child;
   }
 
+  /**
+   * Called when processing {@link FincScaleNode}.
+   * Passes the child's result to the parent.
+   * @override
+   * @param  {FincNode} node - currently being processed node
+   * @param  {Boolean|null} child - result from processing its child
+   * @return {Boolean|null} - result from processing its child
+   */
   processScaleNode(node, child) {
     return child;
   }
@@ -36,10 +64,10 @@ class OrNodeChecker extends EmptyVisitor {
 const isOrNode = root => new OrNodeChecker().visit(root);
 
 /**
- * Executor class is used for executing deployed contracts in 
+ * Executor class is used for executing deployed contracts in
  * {@link FincontractMarketplace}. By executing, we mean 'joining' the contract,
  * which is equivalent to first owning it and then executing. Those two cannot
- * be done separetly. It also allows for choosing `OR` contract 
+ * be done separetly. It also allows for choosing `OR` contract
  * (see {@link FincOrNode}).
  * @example
  * import Executor from './fincontract-executor';
@@ -54,7 +82,16 @@ const isOrNode = root => new OrNodeChecker().visit(root);
 export default class Executor {
 
   /**
-   * Constructs the {@link Executor} object with Fincontracts smart contract 
+   * Time in seconds to trigger timeout error if nothing has happened. By default
+   * it's 90 seconds.
+   * @type {Number}
+   */
+  static get Timeout() {
+    return 90 * 1000;
+  }
+
+  /**
+   * Constructs the {@link Executor} object with Fincontracts smart contract
    * instance and web3 instance connected to an Ethereum node
    * @param {FincontractMarketplace} marketplace a Fincontracts smart contract instance
    * @param {Web3} web3 a web3 instance connected to an Ethereum node
@@ -71,15 +108,15 @@ export default class Executor {
   }
 
   /**
-   * Joins the contract (owns and then executes) as defined in 
-   * {@link FincontractMarketplace} given the 32-byte address of the 
-   * blockchain deployed Fincontract. It first updates any gateways contained 
-   * in the Fincontract and then sends the `join` transaction. For more details 
-   * see {@link Executor#pullThenUpdateGateways} and 
+   * Joins the contract (owns and then executes) as defined in
+   * {@link FincontractMarketplace} given the 32-byte address of the
+   * blockchain deployed Fincontract. It first updates any gateways contained
+   * in the Fincontract and then sends the `join` transaction. For more details
+   * see {@link Executor#pullThenUpdateGateways} and
    * {@link GatewayUpdater#updateAllGateways}
    * @throws {Error} If current user cannot own this contract
    * @param  {String} fctID a 32-byte address of the deployed Fincontract
-   * @return {Promise<ExecutionResult,Error>} promise returned by 
+   * @return {Promise<ExecutionResult,Error>} promise returned by
    *   {@link Executor#watchExecution}
    */
   async join(fctID) {
@@ -95,17 +132,17 @@ export default class Executor {
   }
 
   /**
-   * Chooses a sub-fincontract if the root (top-level) node is an OR node 
+   * Chooses a sub-fincontract if the root (top-level) node is an OR node
    * (see {@link FincOrNode}) and then executes it.
-   * Similarly to {@link Executor#join} it updates the 
+   * Similarly to {@link Executor#join} it updates the
    * gateways before proceeding with the actual execution
    * @throws {Error} If current user cannot own this contract
    * @throws {Error} If the root of the fincontract is not an OR node
    * @param  {String} fctID a 32-byte address of the deployed Fincontract
    * @param  {Boolean} choice a choice for the sub-fincontract
-   *   (1 signifies selection of the first sub-fincontract, 0 selection of the 
+   *   (1 signifies selection of the first sub-fincontract, 0 selection of the
    *    second sub-fincontract)
-   * @return {Promise<ExecutionResult,Error>} promise returned by 
+   * @return {Promise<ExecutionResult,Error>} promise returned by
    *   {@link Executor#watchExecution}
    */
   async choose(fctID, choice) {
@@ -127,7 +164,7 @@ export default class Executor {
    * The Fincontract's execution can finish successfully (Executed),
    * be postponed (Deferred) or it can timeout (Timeout).
    * <ul>
-   *   <li> Executed - happens only if the Fincontract does not contain 
+   *   <li> Executed - happens only if the Fincontract does not contain
    *   any OR nodes and all Timebound nodes have starting time later than now.
    *   (see {@link FincTimeboundNode.lowerBound}) </li>
    *   <li> Deferred - if the above condition is not met, then the Fincontract's
@@ -135,17 +172,17 @@ export default class Executor {
    *   created, while the sub-tree which was able to execute completely is
    *   executed and the its payments are enforced. </li>
    *   <li> Timeout - if the transaction throws any error, the timeout will be
-   *   triggered after {@link TIMEOUT} seconds. Errors can throw, because the
-   *   gateways have incorrect address, they were incorrectly updated or 
+   *   triggered after {@link Executor.Timeout} seconds. Errors can throw, because the
+   *   gateways have incorrect address, they were incorrectly updated or
    *   the transaction ran out of gas (OOG) due to recursion.
    * </ul>
-   * The original Fincontract is always deleted, unless the transaction threw 
+   * The original Fincontract is always deleted, unless the transaction threw
    * for some reason, then all state changes are reverted as defined by the
    * Ethereum protocol.
-   * 
-   * @param  {Transaction} sentTransaction a sent Transaction object, either 
+   *
+   * @param  {Transaction} sentTransaction a sent Transaction object, either
    *   'join' or 'executeOr' (see {@link FincontractMarketplace})
-   * @return {Promise<ExecutionResult,Error>} an object containing the result of 
+   * @return {Promise<ExecutionResult,Error>} an object containing the result of
    *   the execution or an Error if it timed out.
    */
   async watchExecution(sentTransaction) {
@@ -157,7 +194,7 @@ export default class Executor {
     });
     await sentTransaction.promise;
     const timeout = new Promise((resolve, reject) => {
-      setTimeout(reject, TIMEOUT, Error('Execution timed out! Probably threw!'));
+      setTimeout(reject, Executor.Timeout, Error('Execution timed out! Probably threw!'));
     });
     return Promise.race([executed, deferred, timeout]);
   }
@@ -167,9 +204,9 @@ export default class Executor {
    * (see {@link FincontractMarketplace}), which yield the newly created
    * Fincontracts.
    * @param  {String} deleted - the address of recently deleted Fincontract
-   * @return {Promise<ExecutionResult,Error>} promise that resolve to the 
-   *   results of execution with {@link ExecutionResult.newFincontracts} 
-   *   containing a list of newly created Fincontract ids or rejects with 
+   * @return {Promise<ExecutionResult,Error>} promise that resolve to the
+   *   results of execution with {@link ExecutionResult.newFincontracts}
+   *   containing a list of newly created Fincontract ids or rejects with
    *   an Error if it could not get the ids
    */
   processDeferredExecution(deleted) {

@@ -6,7 +6,7 @@ const log = require('minilog')('example');
 require('minilog').enable();
 
 /**
- * Examples class is meant to deploy some of the tests defined in 
+ * Examples class is meant to deploy some of the tests defined in
  * {@link FincontractMarketplace} as well as assign Gateways to global values.
  * It's solely for testing purposes and should be removed once the project is
  * released.
@@ -25,7 +25,7 @@ export default class Examples {
   }
 
   /**
-   * Constucts the {@link Examples} object that allows for deployment 
+   * Constucts the {@link Examples} object that allows for deployment
    * of predefined tests
    * @param {FincontractMarketplace} marketplace a Fincontracts smart contract instance
    * @param {Web3} web3 a web3 instance connected to Ethereum node
@@ -38,7 +38,7 @@ export default class Examples {
   }
 
   /**
-   * Runs a predefined function on the blockchain. 
+   * Runs a predefined function on the blockchain.
    * See {@link FincontractMarketplace} for more details.
    * @param  {String} name name of the test to be dpeloyed
    * @return {Promise<String, Error>} promise that resolves to fincontract ID or
@@ -87,7 +87,7 @@ export default class Examples {
    * Fincontract. (See {@link Examples#deploy} for more details)
    * @param  {String} name name of the transaction
    * @param  {Array} args arguments of the transaction
-   * @return {Promise<String, Error>} promise that resolves to id of the 
+   * @return {Promise<String, Error>} promise that resolves to id of the
    *   newly created fincontract or reject with an Error if it has failed
    */
   deployExample(name, args) {
@@ -102,7 +102,7 @@ export default class Examples {
 
   /**
    * Sends a transaction with proper name and arguments and starts watching for
-   * an event to happen, which is defined by filter and then triggers the 
+   * an event to happen, which is defined by filter and then triggers the
    * the callback.
    * @param  {String} name name of the transaction
    * @param  {String} args arguments of the transaction

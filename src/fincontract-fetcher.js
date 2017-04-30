@@ -1,17 +1,16 @@
 import * as finc from './fincontract';
 
-
 /**
  * Fetcher class is used for fetching blockchain deployed Fincontracts, by
- * calling appropriate functions (see `getFincontractInfo` and 
+ * calling appropriate functions (see `getFincontractInfo` and
  * `getDescriptionInfo` from {@link FincontractMarketplace}). It recursively
- * traverses the deployed Fincontract and constructs it's copy for further 
+ * traverses the deployed Fincontract and constructs it's copy for further
  * processing in memory.
  */
 export default class Fetcher {
 
   /**
-   * Constructs the {@link Fetcher} object with Fincontracts smart contract 
+   * Constructs the {@link Fetcher} object with Fincontracts smart contract
    * instance
    * @param {FincontractMarketplace} marketplace a Fincontracts smart contract instance
    */
@@ -62,10 +61,10 @@ export default class Fetcher {
   }
 
   /**
-   * Fetches Fincontract from blockchain given its 32-byte address, by 
-   * recursively fetching nodes and it's children and constructing the 
+   * Fetches Fincontract from blockchain given its 32-byte address, by
+   * recursively fetching nodes and it's children and constructing the
    * {@link FincNode} description tree (see {@link Fetcher#pullDescription})
-   * @param  {String} fctID - 32-byte address of a blockchain deployed Fincontract 
+   * @param  {String} fctID - 32-byte address of a blockchain deployed Fincontract
    * @return {Fincontract} fetched Fincontract instance
    */
   async pullFincontract(fctID) {
@@ -81,7 +80,7 @@ export default class Fetcher {
   }
 
   /**
-   * Performs a recursive description fetch, given a root 32-byte address of the 
+   * Performs a recursive description fetch, given a root 32-byte address of the
    * blockchain deployed Fincontract description
    * @param  {String} descID - 32-byte address of a blockchain deployed
    *   Fincontract's description
@@ -102,19 +101,19 @@ export default class Fetcher {
    * Constructs a current {@link FincNode} given it's description, which
    * uniquely specifies the type of node to be constructed as well as its
    * already constructed sub-nodes (childrenIds) and returns the currentNode.
-   * Due to lack of direct support for Timebound and Scale nodes by 
+   * Due to lack of direct support for Timebound and Scale nodes by
    * {@link FincontractMarketplace}, they are inferred from the description.
    * <ul>
    *   <li>{@link FincScaleNode} - Scale node is constructed if description
    *   contains scale factor not equal to 1</li>
-   *   <li>{@link FincTimeboundNode} - Timebound node is constructed if 
+   *   <li>{@link FincTimeboundNode} - Timebound node is constructed if
    *   description contains lower bound not equal to 0</li>
    * </ul>
    * In both cases, nodes are constructed above the current node and the
    * top node is returned from the function
    * @param  {Array} descInfo - array containing description, as defined by
    *   `getDescriptionInfo` from {@link FincontractMarketplace}
-   * @param  {Array} childrenIds - array containing {@link FincNode} children of 
+   * @param  {Array} childrenIds - array containing {@link FincNode} children of
    *   the current node
    * @return {FincNode} - newly constructed node
    */
@@ -139,9 +138,9 @@ export default class Fetcher {
   /**
    * Fetches the blockchain deployed Fincontract info given its 32-byte address.
    * Returns a promise, that resolves to the Fincontract info as defined
-   * by `getFincontractInfo` function in {@link FincontractMarketplace} or 
+   * by `getFincontractInfo` function in {@link FincontractMarketplace} or
    * rejects with an Error if the Fincontract was not found.
-   * @param  {String} fctID - 32-byte address of the blockchain deployed 
+   * @param  {String} fctID - 32-byte address of the blockchain deployed
    *   Fincontract
    * @return {Promise<String,Error>} - promise, that resolves with the info
    *   or rejects with an Error if the Fincontract was not found.
@@ -159,14 +158,14 @@ export default class Fetcher {
   }
 
   /**
-   * Fetches the blockchain deployed Fincontract description given 
+   * Fetches the blockchain deployed Fincontract description given
    * its 32-byte address. Returns a promise, that resolves to the Fincontract
-   * description as defined by `getDescriptionInfo` function 
-   * in {@link FincontractMarketplace} or rejects with an Error if the whole 
+   * description as defined by `getDescriptionInfo` function
+   * in {@link FincontractMarketplace} or rejects with an Error if the whole
    * description was empty.
-   * @param  {String} descID - 32-byte address of the blockchain deployed 
+   * @param  {String} descID - 32-byte address of the blockchain deployed
    *   Fincontract description
-   * @return {Promise<String,Error>} - promise, that resolves with the 
+   * @return {Promise<String,Error>} - promise, that resolves with the
    *   description or rejects with an Error if the description was empty.
    */
   getDescriptionInfo(descID) {

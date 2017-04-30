@@ -48,7 +48,7 @@ export default class FincontractStorage extends Storage {
   }
 
   addFincontractID(id) {
-    return typeof id === 'string' && 
+    return typeof id === 'string' &&
       this.addToStorage(FincontractStorage.IDS_CAT, id, true);
   }
 

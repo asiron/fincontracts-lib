@@ -9,12 +9,17 @@ require('minilog').enable();
 
 /**
  * Deployer allows for deployment of {@link Fincontract} to the blockchain in
- * a series of transaction. It makes sure that the topological 
+ * a series of transaction. It makes sure that the topological
  * order of {@link FincNode}s is preserved. It also allows for immediate issuance
  * of the {@link Fincontract} to a given proposed owner.
  * @example
- * const d = new Deployer(marketplace, web3);
- * const id = await d.deploy(fincontract);
+ * import Deployer from './fincontract-deployer';
+ * try {
+ *   const d = new Deployer(marketplace, web3);
+ *   const id = await d.deploy(fincontract);
+ * catch (err) {
+ *   console.log(err);
+ * }
  */
 export default class Deployer {
 
@@ -33,12 +38,12 @@ export default class Deployer {
     this.marketplace = marketplace;
   }
 
-  /** 
+  /**
    * Deploys a description of a Fincontract to the blockchain by traversing
    * the Fincontract description (See {@link FincNode} and {@link DescriptionDeployer})
    * and returns a promise that resolves to id of the deployed Fincontract.
    * @param  {FincNode} description Root description of {@link Fincontract}
-   * @return {Promise.<String, Error>} promise that resolves 
+   * @return {Promise.<String, Error>} promise that resolves
    *  to id of blockchain deployed Fincontract or rejects with an error
    */
   async deploy(description) {
@@ -51,7 +56,7 @@ export default class Deployer {
    * (See {@link Deployer#deploy}) and then issues it for the proposed owner.
    * @param  {FincNode} description Root description of {@link Fincontract}
    * @param  {String} proposedOwner address of the proposed owner's Ethereum account
-   * @return {Promise.<String, Error>} promise that resolves 
+   * @return {Promise.<String, Error>} promise that resolves
    *  to id of blockchain deployed Fincontractor rejects with an error
    */
   async issue(description, proposedOwner) {
@@ -59,12 +64,12 @@ export default class Deployer {
     return this.issueFincontract(fctID, proposedOwner);
   }
 
-  /** 
+  /**
    * Deploys the actual Fincontract to the blockchain given that the description
    * was already deployed and it's id is given as the argument
    * @param  {String} descID Fincontract description's id deployed to the blockchain
-   * @return {Promise.<String, Error>} Promise that resolves 
-   *  to Fincontract's id deployed 
+   * @return {Promise.<String, Error>} Promise that resolves
+   *  to Fincontract's id deployed
    *  to the blockchain or rejects with an error
    */
   deployFincontract(descID) {
@@ -79,15 +84,15 @@ export default class Deployer {
       });
   }
 
-  /** 
-   * Issues the actual Fincontract to the proposed owner in the blockchain 
-   * given that the Fincontract was already deployed and 
+  /**
+   * Issues the actual Fincontract to the proposed owner in the blockchain
+   * given that the Fincontract was already deployed and
    * it's id is given as the argument
    * @param  {String} fctID Fincontract's id deployed to the blockchain
    * @param  {String} proposedOwner address of the proposed owner's Ethereum account
-   * @return {Promise.<String, Error>} Promise that resolves 
+   * @return {Promise.<String, Error>} Promise that resolves
    *  to Fincontract's id deployed to the blockchain or rejects with an error
-   */  
+   */
   issueFincontract(fctID, proposedOwner) {
     return this.sender
       .send('issueFor', [fctID, proposedOwner])

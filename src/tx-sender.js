@@ -1,12 +1,6 @@
 const log = require('minilog')('sender');
 require('minilog').enable();
 
-/**
- * Maximum Gas to be spent in an Ethereum transaction
- * @type {Number}
- */
-export const GASLIMIT = 4000000;
-
 const wasTransactionIncluded = (web3, blockHash, tx) => {
   return web3.eth.getBlock(blockHash).transactions.includes(tx);
 };
@@ -15,8 +9,8 @@ const wasTransactionIncluded = (web3, blockHash, tx) => {
  * Object passed to {@link Transaction#watch} as filter argument that specifies
  * type of event or blockchain change to watch for.
  * @typedef {Object} TransactionFilter
- * @property {String} event - {@link FincontractMarketplace}'s event to 
- *   watch for 
+ * @property {String} event - {@link FincontractMarketplace}'s event to
+ *   watch for
  * @property {String} block - Blockchain change to watch for (see {@link Web3},
  *   specifically `web3.eth.filter` for more details)
  */
@@ -25,8 +19,8 @@ const wasTransactionIncluded = (web3, blockHash, tx) => {
 export class Transaction {
 
   /**
-   * Constructs {@link Transaction} object with a promise of sent transaction 
-   * as first argument and the usual context necessary for 
+   * Constructs {@link Transaction} object with a promise of sent transaction
+   * as first argument and the usual context necessary for
    * interacting with blockchain
    * @param  {Promise<String,Error>} sent promise of sent transaction, should be
    *   the return value of {@link Sender#send}
@@ -46,9 +40,9 @@ export class Transaction {
    * Constructs a listener and starts watching for the event to happen.
    * Once the event happens the callback will be executed and the returned
    * promise gets resolved with the callback's return value. If any error
-   * happens during the execution, the promise rejects with that error. 
+   * happens during the execution, the promise rejects with that error.
    * @param {TransactionFilter} filter a filter object to listen for events
-   * @param {Function} callback a callback to be executed once event was 
+   * @param {Function} callback a callback to be executed once event was
    *   triggered
    * @return {Promise<String,Error>} promise that resolves to the value returned
    *  by the callback
@@ -91,11 +85,19 @@ export class Transaction {
 }
 
 /**
- * Sender class allows for sending Ethereum transactions and returns 
- * {@link Transaction} objects that can be then watched for events 
+ * Sender class allows for sending Ethereum transactions and returns
+ * {@link Transaction} objects that can be then watched for events
  * (see {@link Transaction#watch}).
  */
 export default class Sender {
+
+  /**
+   * Maximum Gas to be spent in an Ethereum transaction
+   * @type {Number}
+   */
+  static get GasLimit() {
+    return 4000000;
+  }
 
   /**
    * Constructs {@link Sender} object with the usual context for interacting with
@@ -111,7 +113,7 @@ export default class Sender {
   }
 
   /**
-   * Sends a transaction to the blockchain using the smart contract instance 
+   * Sends a transaction to the blockchain using the smart contract instance
    * set within constructor. Name argument is used to retrieve correct function
    * and the arguments are then fed as the arguments of the transaction.
    * Transaction sometimes is lost for unknown reasons. In this case, it will be
@@ -124,7 +126,7 @@ export default class Sender {
   send(name, args) {
     const executor = (resolve, reject) => {
       const method = this.contract[name];
-      method.sendTransaction(...args, {gas: GASLIMIT}, (err, tx) => {
+      method.sendTransaction(...args, {gas: Sender.GasLimit}, (err, tx) => {
         if (err) {
           reject(`${err} at transaction '${name}' with args: ${args}`);
           return;
