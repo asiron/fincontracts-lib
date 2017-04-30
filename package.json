@@ -2,7 +2,7 @@
   "name": "fincontracts-client",
   "version": "1.0.0",
   "scripts": {
-    "build": "babel src -d lib",
+    "build": "babel src -d build",
     "test": "xo",
     "docs": "esdoc"
   },
@@ -15,7 +15,7 @@
     "xo": "^0.18.1"
   },
   "bin": {
-    "fincli": "./lib/cli.js"
+    "fincli": "./build/cli.js"
   },
   "dependencies": {
     "bignumber.js": "^4.0.0",

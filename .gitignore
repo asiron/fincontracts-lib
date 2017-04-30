@@ -1,7 +1,7 @@
 history
 contracts/bin/
 node_modules/
-lib/
+build/
 .geth_data/
 *xmlhttprequest*
 res/password.pass

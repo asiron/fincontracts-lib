@@ -6,6 +6,7 @@ require('minilog').enable();
 
 /** @external {Web3} https://github.com/ethereum/wiki/wiki/JavaScript-API */
 /** @external {FincontractMarketplace} https://bitbucket.org/s-tikhomirov/fincontracts.git */
+/** @external {Gateway} https://bitbucket.org/s-tikhomirov/fincontracts.git */
 
 /**
  * Deployer allows for deployment of {@link Fincontract} to the blockchain in

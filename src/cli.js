@@ -1,16 +1,19 @@
 #!/usr/bin/env node --harmony
 import {BigNumber} from 'bignumber.js';
+import {Gateway} from '../contracts/bin/gateway';
+import {GatewayInteger} from '../contracts/bin/gatewayint';
+import {GatewayBool} from '../contracts/bin/gatewaybool';
 import {FincontractMarketplace} from '../contracts/bin/marketplace';
-import Serializer from './fincontract-serializer';
-import Evaluator from './fincontract-evaluator';
-import Deployer from './fincontract-deployer';
-import Executor from './fincontract-executor';
-import Examples from './fincontract-examples';
-import Fetcher from './fincontract-fetcher';
-import Parser from './fincontract-parser';
-import Sender from './tx-sender';
+import Serializer from './lib/fincontract-serializer';
+import Evaluator from './lib/fincontract-evaluator';
+import Deployer from './lib/fincontract-deployer';
+import Executor from './lib/fincontract-executor';
+import Examples from './lib/fincontract-examples';
+import Fetcher from './lib/fincontract-fetcher';
+import Parser from './lib/fincontract-parser';
+import Sender from './lib/tx-sender';
 import FincontractStorage from './storage';
-import Currency from './currency';
+import Currency from './lib/currency';
 
 const figures = require('figures');
 const logSymbols = require('log-symbols');
@@ -20,6 +23,9 @@ const Web3 = require('web3');
 
 const web3 = new Web3();
 let marketplace = null;
+let gateway = null;
+let gatewayint = null;
+let gatewaybool = null;
 
 const error = msg => chalk.bold.red(`${figures.cross} ${msg}`);
 const warn = msg => chalk.yellow(`${logSymbols.warning} ${msg}`);
@@ -49,6 +55,9 @@ function connectToEthereumNode(url) {
   web3.setProvider(provider);
   if (isNodeConnected() === true) {
     marketplace = FincontractMarketplace(web3);
+    gateway = Gateway(web3);
+    gatewayint = GatewayInteger(web3);
+    gatewaybool = GatewayBool(web3);
     web3.eth.defaultAccount = web3.eth.coinbase;
     return true;
   }
@@ -208,7 +217,7 @@ cli
   .validate(isNodeConnected)
   .description('Joins a fincontract from the currently selected account')
   .action(async (args, cb) => {
-    const exec = new Executor(marketplace, web3);
+    const exec = new Executor(marketplace, gateway, web3);
     const id = parseAddress(args.id);
     try {
       let executed;
@@ -251,7 +260,7 @@ cli
         saveFincontract(fincontract, name, ow);
       }
       if (args.options.eval) {
-        const e = new Evaluator(web3);
+        const e = new Evaluator(gateway, web3);
         const base = args.options.convert || 'USD';
         const method = args.options.eval;
         const evaluated = await e.evaluate(fincontract.rootDescription, {method});
@@ -321,7 +330,7 @@ cli
   .description('Deploys one of the examples from marketplace smart contract')
   .action(async (args, cb) => {
     try {
-      const ex = new Examples(marketplace, web3);
+      const ex = new Examples(marketplace, gatewaybool, gatewayint, web3);
       const fctID = await ex.runExample(args.index);
       if (storage.addFincontractID(fctID)) {
         cli.log(info('ID added to autocomplete!'));

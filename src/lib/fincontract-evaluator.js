@@ -1,4 +1,3 @@
-import {Gateway} from '../contracts/bin/gateway';
 import {Visitor} from './fincontract-visitor';
 import Currency from './currency';
 import GatewayUpdater from './fincontract-gateway-updater';
@@ -83,11 +82,11 @@ export function makeEstimationEvaluators() {
  *    with scale obtained from calling the gateway</li>
  * </ul>
  * @param {Web3} web3 a web3 instance connected to Ethereum node
+ * @param {Gateway} gateway a gateway instance not connected to any address
  * @return {NodeEvaluators} node evaluators object describing `direct`
  * evaluation method
  */
-export function makeDirectEvaluators(web3) {
-  const gateway = Gateway(web3);
+export function makeDirectEvaluators(web3, gateway) {
   const evaluator = makeEstimationEvaluators();
   evaluator.if = node => ([iA, iB]) => {
     const bool = gateway.at(node.gatewayAddress).getValue.call();
@@ -276,7 +275,7 @@ export class EvaluatorVisitor extends Visitor {
  * import Evaluator from './fincontract-evaluator';
  * import Currency from './currency';
  * const f = new Fetcher(marketplace);
- * const e = new Evaluator(web3);
+ * const e = new Evaluator(web3, gateway);
  * const method = 'estimate';
  * const id = '<32 byte address of a deployed Fincontract>';
  * try {
@@ -293,12 +292,16 @@ export class EvaluatorVisitor extends Visitor {
 export default class Evaluator {
 
   /**
-   * Constructs the {@link Evaluator} object with a web3 instance
+   * Constructs the {@link Evaluator} object with a web3 instance and a Gateway
+   * smart contract instance not connected to any address
    * @param {Web3} web3 a web3 instance connected to Ethereum node
+   * @param {Gateway} gateway a gateway instance not connected to any address
    */
-  constructor(web3) {
+  constructor(gateway, web3) {
     /** @private */
     this.web3 = web3;
+    /** @private */
+    this.gateway = gateway;
   }
 
   /**
@@ -320,9 +323,9 @@ export default class Evaluator {
    */
   async evaluate(description, options) {
     if (options.method === 'direct') {
-      const evaluators = makeDirectEvaluators(this.web3);
+      const evaluators = makeDirectEvaluators(this.web3, this.gateway);
       const ev = new EvaluatorVisitor(evaluators);
-      const gu = new GatewayUpdater(this.web3);
+      const gu = new GatewayUpdater(this.web3, this.gateway);
       await gu.updateAllGateways(description);
       return Promise.resolve(ev.visit(description));
     } else if (options.method === 'estimate') {

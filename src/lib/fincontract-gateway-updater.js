@@ -1,4 +1,3 @@
-import {Gateway} from '../contracts/bin/gateway';
 import {CollectingVisitor} from './fincontract-visitor';
 import Sender from './tx-sender';
 
@@ -15,13 +14,17 @@ export class GatewayVisitor extends CollectingVisitor {
 
   /**
    * Constructs the {@link GatewayVisitor} object with a web3 instance
-   * connected to an Ethereum node
+   * connected to an Ethereum node and a Gateway smart contract instance not
+   * connected to any address
    * @param {Web3} web3 a web3 instance connected to an Ethereum node
+   * @param {Gateway} gateway a gateway instance not connected to any address
    */
-  constructor(web3) {
+  constructor(web3, gateway) {
     super();
     /** @private */
     this.web3 = web3;
+    /** @private */
+    this.gateway = gateway;
   }
 
   /**
@@ -39,8 +42,8 @@ export class GatewayVisitor extends CollectingVisitor {
     if (!parseInt(address, 16)) {
       throw new Error(`Gateway's address was 0x0`);
     }
-    const gateway = Gateway(this.web3).at(address);
-    return new Sender(gateway, this.web3)
+    const gw = this.gateway.at(address);
+    return new Sender(gw, this.web3)
       .send('update', [])
       .watch({block: 'latest'}, () => {
         log.info('Finished updating ' + type + ' gateway at: ' + address);
@@ -95,7 +98,7 @@ export class GatewayVisitor extends CollectingVisitor {
  * import GatewayUpdater from './fincontract-gateway-updater';
  * try {
  *   const fctID = '<32-byte address of blockchain deployed Fincontract>'
- *   const gu = new GatewayUpdater(this.web3);
+ *   const gu = new GatewayUpdater(web3, gateway);
  *   const fetcher = new Fetcher(marketplace);
  *   const f = await fetcher.pullFincontract(fctID);
  *   await gu.updateAllGateways(f.rootDescription);
@@ -107,12 +110,14 @@ export default class GatewayUpdater {
 
   /**
    * Constructs the {@link GatewayUpdater} object with a web3 instance
-   * connected to an Ethereum node
+   * connected to an Ethereum node and a Gateway smart contract instance not
+   * connected to any address
    * @param {Web3} web3 a web3 instance connected to an Ethereum node
+   * @param {Gateway} gateway a gateway instance not connected to any address
    */
-  constructor(web3) {
+  constructor(web3, gateway) {
     /** @private */
-    this.gv = new GatewayVisitor(web3);
+    this.gv = new GatewayVisitor(web3, gateway);
   }
 
   /**

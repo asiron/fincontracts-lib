@@ -1,5 +1,3 @@
-import {GatewayInteger} from '../contracts/bin/gatewayint';
-import {GatewayBool} from '../contracts/bin/gatewaybool';
 import Sender from './tx-sender';
 
 const log = require('minilog')('example');
@@ -28,11 +26,17 @@ export default class Examples {
    * Constucts the {@link Examples} object that allows for deployment
    * of predefined tests
    * @param {FincontractMarketplace} marketplace a Fincontracts smart contract instance
+   * @param {Gateway} gatewaybool a connected GatewayBool instance
+   * @param {Gateway} gatewayint a connected GatewayInteger instance
    * @param {Web3} web3 a web3 instance connected to Ethereum node
    */
-  constructor(marketplace, web3) {
+  constructor(marketplace, gatewaybool, gatewayint, web3) {
     /** @private */
     this.marketplace = marketplace;
+    /** @private */
+    this.gatewaybool = gatewaybool;
+    /** @private */
+    this.gatewayint = gatewayint;
     /** @private */
     this.web3 = web3;
   }
@@ -54,13 +58,13 @@ export default class Examples {
       const upperBound = Math.round((Date.now() / 1000) + 3600);
       return this.deployExample('timeboundTest', [0x0, lowerBound, upperBound]);
     } else if (['setGateways', 'resetGateways'].includes(name)) {
-      const gatewayint = (name === 'setGateways') ?
-        GatewayInteger(this.web3).address : 0;
+      const gwint = (name === 'setGateways') ?
+        this.gatewayint.address : 0;
 
-      const gatewaybool = (name === 'setGateways') ?
-        GatewayBool(this.web3).address : 0;
+      const gwbool = (name === 'setGateways') ?
+        this.gatewaybool.address : 0;
 
-      return this.setGateways(gatewayint, gatewaybool);
+      return this.setGateways(gwint, gwbool);
     }
     return Promise.reject(Error('Example does not exist!'));
   }
@@ -68,16 +72,16 @@ export default class Examples {
   /**
    * Runs setGatewayI and setGatewayB {@link FincontractMarketplace} functions
    * with specified parameters as addresses to these gateways.
-   * @param {String} gatewayint address of GatewayI
-   * @param {String} gatewaybool address of GatewayB
+   * @param {String} gwint address of GatewayI
+   * @param {String} gwbool address of GatewayB
    * @return {Promise<String, Error>} promise that resolve to nothing or rejects
    *   with an Error in case transaction has failed
    */
-  setGateways(gatewayint, gatewaybool) {
-    const p1 = this.deploy('setGatewayI', [gatewayint],
-      {block: 'latest'}, () => log.info(`gatewayI set to ${gatewayint}`));
-    const p2 = this.deploy('setGatewayB', [gatewaybool],
-      {block: 'latest'}, () => log.info(`gatewayB set to ${gatewaybool}`));
+  setGateways(gwint, gwbool) {
+    const p1 = this.deploy('setGatewayI', [gwint],
+      {block: 'latest'}, () => log.info(`gatewayI set to ${gwint}`));
+    const p2 = this.deploy('setGatewayB', [gwbool],
+      {block: 'latest'}, () => log.info(`gatewayB set to ${gwbool}`));
     return Promise.all([p1, p2]);
   }
 

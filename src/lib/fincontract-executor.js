@@ -71,7 +71,7 @@ const isOrNode = root => new OrNodeChecker().visit(root);
  * (see {@link FincOrNode}).
  * @example
  * import Executor from './fincontract-executor';
- * const exec = new Executor(marketplace, web3);
+ * const exec = new Executor(marketplace, gateway, web3);
  * try {
  *   const executed = await exec.join(id);
  *   console.log(JSON.stringify(executed));
@@ -92,15 +92,19 @@ export default class Executor {
 
   /**
    * Constructs the {@link Executor} object with Fincontracts smart contract
-   * instance and web3 instance connected to an Ethereum node
+   * instance, a Gateway smart contract instance not connected to any address
+   * and a web3 instance connected to an Ethereum node
    * @param {FincontractMarketplace} marketplace a Fincontracts smart contract instance
+   * @param {Gateway} gateway a gateway instance not connected to any address
    * @param {Web3} web3 a web3 instance connected to an Ethereum node
    */
-  constructor(marketplace, web3) {
+  constructor(marketplace, gateway, web3) {
     /** @private */
     this.web3 = web3;
     /** @private */
     this.marketplace = marketplace;
+    /** @private */
+    this.gateway = gateway;
     /** @private */
     this.fetcher = new Fetcher(marketplace);
     /** @private */
@@ -232,7 +236,7 @@ export default class Executor {
    */
   async pullThenUpdateGateways(fctID) {
     const f = await this.fetcher.pullFincontract(fctID);
-    const gu = new GatewayUpdater(this.web3);
+    const gu = new GatewayUpdater(this.web3, this.gateway);
     await gu.updateAllGateways(f.rootDescription);
     return f;
   }
