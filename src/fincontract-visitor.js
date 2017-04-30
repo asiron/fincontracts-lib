@@ -54,6 +54,41 @@ export class Visitor {
 
     }
   }
+
+  processAndNode() {
+    throw new Error('must be implemented by subclass!');
+  }
+  processIfNode() {
+    throw new Error('must be implemented by subclass!');
+  }
+
+  processOrNode() {
+    throw new Error('must be implemented by subclass!');
+  }
+  
+  processTimeboundNode() {
+    throw new Error('must be implemented by subclass!');
+  }
+  
+  processScaleObsNode() {
+    throw new Error('must be implemented by subclass!');
+  }
+  
+  processScaleNode() {
+    throw new Error('must be implemented by subclass!');
+  }
+  
+  processGiveNode() {
+    throw new Error('must be implemented by subclass!');
+  }
+  
+  processOneNode() {
+    throw new Error('must be implemented by subclass!');
+  }
+  
+  processZeroNode() {
+    throw new Error('must be implemented by subclass!');
+  }
 }
 
 export class CollectingVisitor extends Visitor {
@@ -84,7 +119,7 @@ export class CollectingVisitor extends Visitor {
   }
   processZeroNode() {
     return [];
-  }
+  }  
 }
 
 export class EmptyVisitor extends Visitor {

@@ -1,12 +1,4 @@
-export default class Storage {
-
-  static get IDS_CAT() {
-    return 'ID';
-  }
-
-  static get FINCONTRACTS_CAT() {
-    return 'Fincontract';
-  }
+class Storage {
 
   constructor(storage) {
     this.storage = storage;
@@ -26,12 +18,29 @@ export default class Storage {
     return true;
   }
 
+}
+
+export default class FincontractStorage extends Storage {
+
+  static get IDS_CAT() {
+    return 'ID';
+  }
+
+  static get FINCONTRACTS_CAT() {
+    return 'Fincontract';
+  }
+
   addFincontract(name, fincontract, overw) {
-    return this.addToStorage(Storage.FINCONTRACTS_CAT, name, fincontract, overw);
+    return this.addToStorage(
+      FincontractStorage.FINCONTRACTS_CAT,
+      name,
+      fincontract,
+      overw
+    );
   }
 
   getFincontracts() {
-    return this.getFromStorage(Storage.FINCONTRACTS_CAT);
+    return this.getFromStorage(FincontractStorage.FINCONTRACTS_CAT);
   }
 
   getFincontractByName(name) {
@@ -39,15 +48,16 @@ export default class Storage {
   }
 
   addFincontractID(id) {
-    return typeof id === 'string' && this.addToStorage(Storage.IDS_CAT, id, true);
+    return typeof id === 'string' && 
+      this.addToStorage(FincontractStorage.IDS_CAT, id, true);
   }
 
   getFincontractIDs() {
-    return Object.keys(this.getFromStorage(Storage.IDS_CAT));
+    return Object.keys(this.getFromStorage(FincontractStorage.IDS_CAT));
   }
 
   wipe() {
-    this.storage.removeItem(Storage.IDS_CAT);
-    this.storage.removeItem(Storage.FINCONTRACTS_CAT);
+    this.storage.removeItem(FincontractStorage.IDS_CAT);
+    this.storage.removeItem(FincontractStorage.FINCONTRACTS_CAT);
   }
 }

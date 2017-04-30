@@ -3,12 +3,15 @@
   "version": "1.0.0",
   "scripts": {
     "build": "babel src -d lib",
-    "test": "xo"
+    "test": "xo",
+    "docs": "esdoc"
   },
   "devDependencies": {
     "babel-cli": "^6.0.0",
+    "babel-plugin-transform-function-bind": "^6.22.0",
     "babel-preset-env": "^1.1.8",
     "babel-preset-stage-3": "^6.24.1",
+    "esdoc": "^0.5.2",
     "xo": "^0.18.1"
   },
   "bin": {
@@ -21,10 +24,8 @@
     "log-symbols": "^1.0.2",
     "mathjs": "^3.9.1",
     "minilog": "^3.1.0",
-    "request": "^2.81.0",
     "request-promise-native": "^1.0.3",
     "vorpal": "^1.11.4",
-    "vorpal-repl": "^1.1.8",
     "web3": "^0.18.2"
   },
   "xo": {

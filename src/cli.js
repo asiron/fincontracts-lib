@@ -9,8 +9,8 @@ import Examples from './fincontract-examples';
 import Fetcher from './fincontract-fetcher';
 import Parser from './fincontract-parser';
 import Sender from './tx-sender';
-import Storage from './storage';
-import * as Currency from './currency';
+import FincontractStorage from './storage';
+import * as currency from './currency';
 
 const figures = require('figures');
 const logSymbols = require('log-symbols');
@@ -28,7 +28,7 @@ const ok = msg => chalk.green(`${figures.tick} ${msg}`);
 
 /* Setting up local-storage hook */
 cli.localStorage('fincontract-client');
-const storage = new Storage(cli.localStorage);
+const storage = new FincontractStorage(cli.localStorage);
 
 function parseBigNum(str) {
   try {
@@ -129,7 +129,7 @@ cli
   .validate(isNodeConnected)
   .description('Shows balance of currently selected account')
   .action((args, cb) => {
-    const balance = Currency.convertToJSON(marketplace.getMyBalance.call());
+    const balance = currency.convertToJSON(marketplace.getMyBalance.call());
     cli.log(ok(JSON.stringify(balance)));
     cb();
   });
@@ -231,7 +231,7 @@ cli
   .autocomplete({data: () => storage.getFincontractIDs()})
   .option('-s, --save <name>', 'Save fincontract description as [name]')
   .option('-e, --eval <method>', 'Evaluate fincontract using a method', ['direct', 'estimate'])
-  .option('--convert <base>', 'Convert result of evaluation to currency', Object.values(Currency.Currencies))
+  .option('--convert <base>', 'Convert result of evaluation to currency', Object.values(currency.Currencies))
   .option('--overwrite', 'Overwrites the contract if it already exists with same name!')
   .types({string: ['_']})
   .description('Pulls contract from blockchain.')
@@ -254,10 +254,10 @@ cli
         const e = new Evaluator(web3);
         const base = args.options.convert || 'USD';
         const method = args.options.eval;
-        const evaluated = await e.evaluate(fincontract, {method});
-        const currencies = Currency.convertToJSON(evaluated);
+        const evaluated = await e.evaluate(fincontract.rootDescription, {method});
+        const currencies = currency.convertToJSON(evaluated);
+        const exchanged = await currency.changeAllCurrencies(base, currencies);
         cli.log(info(JSON.stringify(currencies)));
-        const exchanged = await Currency.changeAllCurrencies(base, currencies);
         cli.log(info(JSON.stringify(exchanged)));
       }
     } catch (err) {
