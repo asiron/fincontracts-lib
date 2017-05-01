@@ -1,12 +1,33 @@
-export * from './currency';
-export * from './tx-sender';
-export * from './fincontract';
-export * from './fincontract-parser';
-export * from './fincontract-deployer';
-export * from './fincontract-evaluator';
-export * from './fincontract-examples';
-export * from './fincontract-executor';
-export * from './fincontract-fetcher';
-export * from './fincontract-visitor';
-export * from './fincontract-serializer';
-export * from './fincontract-gateway-updater';
+import Currency from './currency';
+import Sender from './tx-sender';
+import * as finc from './fincontract';
+import Parser from './fincontract-parser';
+import Deployer from './fincontract-deployer';
+import {
+  default as Evaluator,
+  makeEstimationEvaluators,
+  makeDirectEvaluators
+} from './fincontract-evaluator';
+import Examples from './fincontract-examples';
+import Executor from './fincontract-executor';
+import Fetcher from './fincontract-fetcher';
+import * as vis from './fincontract-visitor';
+import Serializer from './fincontract-serializer';
+import GatewayUpdater from './fincontract-gateway-updater';
+
+export {
+  Currency,
+  Sender,
+  finc,
+  Parser,
+  Deployer,
+  Evaluator,
+  makeEstimationEvaluators,
+  makeDirectEvaluators,
+  Examples,
+  Executor,
+  Fetcher,
+  vis,
+  Serializer,
+  GatewayUpdater
+};
