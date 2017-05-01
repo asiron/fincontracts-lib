@@ -1,4 +1,4 @@
 {
-  "source": "./src/lib",
+  "source": "./src",
   "destination": "./docs"
 }

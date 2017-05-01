@@ -1,9 +1,4 @@
-history
-contracts/bin/
 node_modules/
-build/
-.geth_data/
-*xmlhttprequest*
-res/password.pass
-docs
+lib/
+docs/
 .DS_store
