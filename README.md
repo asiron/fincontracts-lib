@@ -1,7 +1,7 @@
 # fincontracts-lib
 Copyright (C) 2017 - Maciej Żurad, University of Luxembourg
 
-Node.js package for interacting with Fincontracts deployed on the Ethereum blockchain
+Node.js package for interacting with Fincontracts deployed on the Ethereum blockchain.
 
 ### Installation
 
@@ -21,6 +21,16 @@ In order to use most of the functionality of **fincontracts-lib**, you will need
   * an instance of [web3.js](https://github.com/ethereum/wiki/wiki/JavaScript-API) provider connected to an Ethereum node, e.g. [geth](https://github.com/ethereum/go-ethereum/wiki/geth).
   * an instance of [FincontractMarketplace](https://bitbucket.org/s-tikhomirov/fincontracts.git) smart contract, which was compiled and deployed on the blockchain. We usually refer to that instance in the documentation, when we say **FincontractMarketplace**
   * an interface/class of [Gateway](https://bitbucket.org/s-tikhomirov/fincontracts.git) smart contract, which couldn't be deployed to the blockchain as its an abstract smart contract, but must be instantiated on demand with a given **Gateway** address during Fincontract processing, such as [execution](#Executor)
+
+### Documentation
+Documentation is hosted [here](https://doc.esdoc.org/github.com/Asiron/fincontracts-lib/) 
+thanks to ESDoc!
+Alternatively, you can clone this repo and build documentation locally. If you wish to do so, run:
+```
+npm run docs
+```
+Now, you can simply navigate to `docs/index.html` and browse the documentation.
+
 
 ### Projects
 [fincontract-cli](https://github.com/asiron/fincontracts-cli) is an example project
@@ -124,11 +134,3 @@ const srz = new finlib.Serializer();
 const serialized = srz.serialize(fincontract);
 console.log(JSON.stringify(serialized));
 ```
-
-### Documentation
-
-You can clone this repo and build documentation locally. If you wish to do so, run:
-```
-npm run docs
-```
-Now, you can simply navigate to `docs/index.html` and browse the documentation.
