@@ -10,7 +10,7 @@ Object.keys(_currency).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _currency[key];
     }
   });
@@ -22,7 +22,7 @@ Object.keys(_txSender).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _txSender[key];
     }
   });
@@ -34,7 +34,7 @@ Object.keys(_fincontract).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _fincontract[key];
     }
   });
@@ -46,7 +46,7 @@ Object.keys(_fincontractParser).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _fincontractParser[key];
     }
   });
@@ -58,7 +58,7 @@ Object.keys(_fincontractDeployer).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _fincontractDeployer[key];
     }
   });
@@ -70,7 +70,7 @@ Object.keys(_fincontractEvaluator).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _fincontractEvaluator[key];
     }
   });
@@ -82,7 +82,7 @@ Object.keys(_fincontractExamples).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _fincontractExamples[key];
     }
   });
@@ -94,7 +94,7 @@ Object.keys(_fincontractExecutor).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _fincontractExecutor[key];
     }
   });
@@ -106,7 +106,7 @@ Object.keys(_fincontractFetcher).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _fincontractFetcher[key];
     }
   });
@@ -118,7 +118,7 @@ Object.keys(_fincontractVisitor).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _fincontractVisitor[key];
     }
   });
@@ -130,7 +130,7 @@ Object.keys(_fincontractSerializer).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _fincontractSerializer[key];
     }
   });
@@ -142,7 +142,7 @@ Object.keys(_fincontractGatewayUpdater).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _fincontractGatewayUpdater[key];
     }
   });
