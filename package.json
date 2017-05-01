@@ -15,12 +15,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/asiron/fincontract-lib.git"
+    "url": "git+https://github.com/asiron/fincontracts-lib.git"
   },
   "author": "asiron",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/asiron/fincontract-lib/issues"
+    "url": "https://github.com/asiron/fincontracts-lib/issues"
   },
   "keywords": [
     "ethereum",
@@ -28,7 +28,7 @@
     "solidity",
     "dapp"
   ],
-  "homepage": "https://github.com/asiron/fincontract-lib#README.md",
+  "homepage": "https://github.com/asiron/fincontracts-lib#README.md",
   "devDependencies": {
     "babel-cli": "^6.0.0",
     "babel-preset-es2015": "^6.24.1",
