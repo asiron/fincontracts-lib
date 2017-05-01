@@ -1,4 +1,4 @@
 node_modules/
-lib/
+dist/
 docs/
 .DS_store

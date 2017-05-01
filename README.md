@@ -1,83 +1,42 @@
-# fincontract-client
+# fincontracts-lib
 Copyright (C) 2017 - Maciej Żurad, University of Luxembourg
 
-Client for managing financial contracts deployed on the Ethereum blockchain.
+JavaScript library for interacting with Fincontracts deployed on the Ethereum blockchain
 
-## Getting Started
+### Installation
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
-
-### Prerequisites
-
-You will need the following software:
-
-- jq  [1.5]
-- npm [3.9.5]
-- nodejs [v6.2.2]
-- geth [1.5.7]
-
-You can install `npm` and `nodejs` from  [nodejs.org](https://nodejs.org/en/download/) or if you're on Mac OS X with `brew` simply run
-
+Run this command in your project's root directory to install the package.
 ```
-brew install node
+npm install --save fincontracts-lib
 ```
 
-For installing `geth` follow instructions from [github.com/ethereum/go-ethereum](https://github.com/ethereum/go-ethereum/wiki/Building-Ethereum)
-Last but not least, you can install `jq` on:
+### Getting started
+In order to use most of the functionality of **fincontracts-lib**, you will need:
 
-- Debian/Ubuntu `sudo apt-get install jq`
-- Mac OS X `brew install jq`
+  * an instance of [web3.js](https://github.com/ethereum/wiki/wiki/JavaScript-API) provider connected to an Ethereum node, e.g. [geth](https://github.com/ethereum/go-ethereum/wiki/geth).
+  * an instance of [FincontractMarketplace](https://bitbucket.org/s-tikhomirov/fincontracts.git) smart contract, which was compiled and deployed on the blockchain. We usually refer to that instance in the documentation, when we say **FincontractMarketplace**
+  * an interface/class of [Gateway](https://bitbucket.org/s-tikhomirov/fincontracts.git) smart contract, which couldn't be deployed to the blockchain as its an abstract smart contract, but must be instantiated on demand with a given **Gateway** address during various Fincontract processing
 
-### Installing and Building
+### Examples
 
-Initialize submodules and pull them by running (from the root of this repository)
+#### Deployer
+
+**Deployer** allows for Fincontract deployment
 
 ```
-git submodule init
-git submodule update
+const Deployer = require('./fincontract-deployer');
+try {
+  const d = new Deployer(marketplace, web3);
+  const id = await d.deploy(fincontract);
+catch (err) {
+  console.log(err);
+}
 ```
 
-Install all node dependecies and compile ES6 scripts to ES5 using
-```
-npm install
-npm run build
-```
+### Documentation
 
-### Usage
-
-#### Setup
- If you want to setup the private blockchain, allocate some ether at the beginning, compile and deploy contracts to it (might take a while):
+You can clone this repo and build documentation locally, if you wish to do so, run:
 ```
-./blockchain setup
+npm run docs
 ```
-The blockchain will be running in the background after initialization.
-#### Deploy
- If you just want to deploy contracts, then run:
-```
-./blockchain deploy
-```
-Blockchain has to be initialized (using `./blockchain setup`) and cannot be running in the background.
-
-#### Stop, Start, Restart and Attach
-You can also stop, start, restart and attach to the current session.
-```
-./blockchain stop
-./blockchain start
-./blockchain restart
-./blockchain attach
-```
-
-### Retrieving Financial Contracts from the blockchain and analyzing them.
-Once you have attached to the blockchain, you should see Java Script console. Run `loadScript('lib/fetch_fincontracts.js')` in order to fetch a test Fincontract. Once the transaction was mined, you should see the message:
-```
-Fincontract: <fctId>
-Created for: <user_address>
-```
-You can then use variable to `testFincontract` to view the contract. Furthemore, you can run `testFincontract.rootDescription.eval()` to see the evaluation of the financial contract.
-
-### Development
-
-Remember to deploy contracts if you have changed Solidity contracts from `contracts/` directory and remember to run `npm run build` if you changed any of the JavaScript source files form `src`, you will have to reload the scripts as well in JS console.
-
-
-
+Now, you can simply navigate to `docs/index.html` and browse the documentation.
