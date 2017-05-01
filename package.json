@@ -1,6 +1,6 @@
 {
   "name": "fincontracts-lib",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "description": "JavaScript library for interacting with Fincontracts deployed on the Ethereum blockchain",
   "main": "./dist/index.js",
   "scripts": {
@@ -9,7 +9,7 @@
     "clean": "rm -rf dist",
     "prebuild": "npm run clean && npm run init",
     "build": "babel ./src -d ./dist --presets es2015,stage-3",
-    "prepublish": "npm run build",
+    "publish": "npm run build",
     "test": "xo",
     "docs": "esdoc"
   },
