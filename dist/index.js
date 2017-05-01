@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.GatewayUpdater = exports.Serializer = exports.vis = exports.Fetcher = exports.Executor = exports.Examples = exports.makeDirectEvaluators = exports.makeEstimationEvaluators = exports.Evaluator = exports.Deployer = exports.Parser = exports.finc = exports.Sender = exports.Currency = undefined;
+exports.GatewayUpdater = exports.Serializer = exports.vis = exports.Fetcher = exports.Executor = exports.Examples = exports.makeDirectEvaluators = exports.makeEstimationEvaluators = exports.Evaluator = exports.Deployer = exports.Parser = exports.finc = exports.Transaction = exports.Sender = exports.Currency = undefined;
 
 var _currency = require('./currency');
 
@@ -59,6 +59,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 exports.Currency = _currency2.default;
 exports.Sender = _txSender2.default;
+exports.Transaction = _txSender.Transaction;
 exports.finc = finc;
 exports.Parser = _fincontractParser2.default;
 exports.Deployer = _fincontractDeployer2.default;

@@ -1,5 +1,5 @@
 import Currency from './currency';
-import Sender from './tx-sender';
+import {default as Sender, Transaction} from './tx-sender';
 import * as finc from './fincontract';
 import Parser from './fincontract-parser';
 import Deployer from './fincontract-deployer';
@@ -18,6 +18,7 @@ import GatewayUpdater from './fincontract-gateway-updater';
 export {
   Currency,
   Sender,
+  Transaction,
   finc,
   Parser,
   Deployer,
