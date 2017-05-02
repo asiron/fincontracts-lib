@@ -60,7 +60,7 @@ function joinGraphDescriptions(left, right) {
 
 /**
  * Creates a random ID generator given a PRNG
- * @param  {Function} randomFunc a PRNG to be used as source of randomness
+ * @param  {Function} randomFunc a PRNG to be used as a source of randomness
  * @return {Function} returns a random ID generator function
  */
 const makeRandomIDFunc = exports.makeRandomIDFunc = randomFunc => () => Math.floor(randomFunc() * Number.MAX_SAFE_INTEGER);
