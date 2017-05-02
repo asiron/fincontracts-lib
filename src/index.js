@@ -14,6 +14,7 @@ import Fetcher from './fincontract-fetcher';
 import * as vis from './fincontract-visitor';
 import Serializer from './fincontract-serializer';
 import GatewayUpdater from './fincontract-gateway-updater';
+import DotGenerator from './fincontract-dot-generator';
 
 export {
   Currency,
@@ -30,5 +31,6 @@ export {
   Fetcher,
   vis,
   Serializer,
-  GatewayUpdater
+  GatewayUpdater,
+  DotGenerator
 };

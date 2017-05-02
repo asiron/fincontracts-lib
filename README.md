@@ -3,7 +3,7 @@ Copyright (C) 2017 - Maciej Żurad, University of Luxembourg
 
 Node.js package for interacting with Fincontracts deployed on the Ethereum blockchain.
 
-### Installation
+## Installation
 
 Run this command in your project's root directory to install the package.
 ```
@@ -15,14 +15,14 @@ You can now import the package using:
 const finlib = require('fincontracts-lib');
 ```
 
-### Getting started
+## Getting started
 In order to use most of the functionality of **fincontracts-lib**, you will need:
 
   * an instance of [web3.js](https://github.com/ethereum/wiki/wiki/JavaScript-API) provider connected to an Ethereum node, e.g. [geth](https://github.com/ethereum/go-ethereum/wiki/geth).
   * an instance of [FincontractMarketplace](https://bitbucket.org/s-tikhomirov/fincontracts.git) smart contract, which was compiled and deployed on the blockchain. We usually refer to that instance in the documentation, when we say **FincontractMarketplace**
   * an interface/class of [Gateway](https://bitbucket.org/s-tikhomirov/fincontracts.git) smart contract, which couldn't be deployed to the blockchain as its an abstract smart contract, but must be instantiated on demand with a given **Gateway** address during Fincontract processing, such as [execution](#Executor)
 
-### Documentation
+## Documentation
 Documentation is hosted [here](https://doc.esdoc.org/github.com/Asiron/fincontracts-lib/) 
 thanks to ESDoc!
 Alternatively, you can clone this repo and build documentation locally. If you wish to do so, run:
@@ -32,13 +32,13 @@ npm run docs
 Now, you can simply navigate to `docs/index.html` and browse the documentation.
 
 
-### Projects
+## Projects
 [fincontract-cli](https://github.com/asiron/fincontracts-cli) is an example project
 which uses **fincontracts-lib**. It contains scripts for running your own
 private blockchain, deploying smart contracts and generating JavaScript files
 with instantiation scripts necessary for using this library as already stated.
 
-### Examples
+## Examples
 
 These examples show core functionality of the **fincontracts-lib** package.
 Everytime, we refer to these variables, we mean:
@@ -47,7 +47,7 @@ Everytime, we refer to these variables, we mean:
   * `marketplace` is FincontractMarketplace smart contract instance
   * `web3` is web3.js instance connected to an Ethereum node
 
-#### Deployer
+### Deployer
 
 **Deployer** allows for Fincontract deployment and issuence. Following example
 deploys the Fincontract and issues it to everyone.
@@ -62,7 +62,7 @@ catch (err) {
 }
 ```
 
-#### Evaluator
+### Evaluator
 
 **Evaluator** allows for evaluation of an instantiated Fincontract.
 The following example first pulls the Fincontract from the blockchain and then
@@ -86,7 +86,7 @@ try {
 }
 ```
 
-#### Executor
+### Executor
 
 **Executor** allows for execution of a deployed Fincontract given its address.
 It also allows for choosing a sub-fincontract if the top-level node is an OR node.
@@ -105,7 +105,7 @@ try {
 }
 ```
 
-#### Parser
+### Parser
 
 **Parser** can parse a String and return a Fincontract description, which then
 can be [evaluated](#Evaluator) or [deployed](#Deployer).
@@ -121,7 +121,7 @@ try {
 }
 ```
 
-#### Serializer
+### Serializer
 
 **Serializer** can take a Fincontract and serialize it to String. It serializes,
 all properties: `owner`, `issuer` and the `proposedOwner` as well as serializes
@@ -133,4 +133,16 @@ const finlib = require('./fincontracts-lib');
 const srz = new finlib.Serializer();
 const serialized = srz.serialize(fincontract);
 console.log(JSON.stringify(serialized));
+```
+
+### DotGenerator
+
+**DotGenerator** can take a Fincontract and generate a graph description in
+DOT language, that can be piped into any DOT engine, which supports HTML labels.
+
+```
+const finlib = require('./fincontracts-dot-generator');
+const dg = new finlib.DotGenerator();
+const dot = dg.generate(fincontract);
+console.log(dot);
 ```

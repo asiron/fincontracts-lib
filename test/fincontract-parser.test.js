@@ -7,15 +7,15 @@ import Currency from '../src/currency';
 import Parser from '../src/fincontract-parser';
 import * as finc from '../src/fincontract';
 
-describe('Parser', () => {
+describe('Parser', function() {
   let parser;
 
-  beforeEach(() => {
+  beforeEach(function() {
     parser = new Parser();
   });
 
-  describe('#parse()', () => {
-    it('should correctly parse Zero()', () => {
+  describe('#parse()', function() {
+    it('should correctly parse Zero()', function() {
       const string = 'Zero()';
       const parsed = parser.parse(string);
       return Promise.all([
@@ -25,13 +25,13 @@ describe('Parser', () => {
       ]);
     });
 
-    it('should correctly parse One(AAA)', () => {
+    it('should correctly parse One(AAA)', function() {
       const string = 'One(AAA)';
       const err = 'Currency not defined!';
       return parser.parse(string).should.be.rejectedWith(Error, err);
     });
 
-    it('should correctly parse One(EUR)', () => {
+    it('should correctly parse One(EUR)', function() {
       const string = 'One(EUR)';
       const currIndex = Currency.getCurrencyIndex('EUR');
       const parsed = parser.parse(string);
@@ -43,7 +43,7 @@ describe('Parser', () => {
       ]);
     });
 
-    it('should correctly parse Scale(-5,One(GBP))', () => {
+    it('should correctly parse Scale(-5,One(GBP))', function() {
       const string = 'Scale(-5,One(GBP))';
       const currIndex = Currency.getCurrencyIndex('GBP');
       const parsed = parser.parse(string);
@@ -56,7 +56,7 @@ describe('Parser', () => {
       ]);
     });
 
-    it('should correctly parse ScaleObs(0x0000000,Zero())', () => {
+    it('should correctly parse ScaleObs(0x0000000,Zero())', function() {
       const string = 'ScaleObs(0x0000000,Zero())';
       const parsed = parser.parse(string);
       return Promise.all([
@@ -67,7 +67,7 @@ describe('Parser', () => {
       ]);
     });
 
-    it('should correctly parse If(0xabcdef,Zero(),Zero())', () => {
+    it('should correctly parse If(0xabcdef,Zero(),Zero())', function() {
       const string = 'If(0xabcdef,Zero(),Zero())';
       const parsed = parser.parse(string);
       return Promise.all([
@@ -79,7 +79,7 @@ describe('Parser', () => {
       ]);
     });
 
-    it('should correctly parse Give(One(SGD))', () => {
+    it('should correctly parse Give(One(SGD))', function() {
       const string = 'Give(One(SGD))';
       const currIndex = Currency.getCurrencyIndex('SGD');
       const parsed = parser.parse(string);
@@ -91,7 +91,7 @@ describe('Parser', () => {
       ]);
     });
 
-    it('should correctly parse And(Timebound(0,10,One(JPY)),Scale(10,One(CNY)))', () => {
+    it('should correctly parse And(Timebound(0,10,One(JPY)),Scale(10,One(CNY)))', function() {
       const string = 'And(Timebound(0,10,One(JPY)),Scale(10,One(CNY)))';
       const currIndexJPY = Currency.getCurrencyIndex('JPY');
       const currIndexCNY = Currency.getCurrencyIndex('CNY');
@@ -120,12 +120,12 @@ describe('Parser', () => {
       });
     });
 
-    it('should throw syntax error on Zero())', () => {
+    it('should throw syntax error on Zero())', function() {
       const string = 'Zero())';
       return parser.parse(string).should.be.rejectedWith(SyntaxError);
     });
 
-    it('should throw Error on unknown node type: Zeroo()', () => {
+    it('should throw Error on unknown node type: Zeroo()', function() {
       const string = 'Zeroo()';
       const err = 'Unknown case during parsing';
       return parser.parse(string).should.be.rejectedWith(Error, err);

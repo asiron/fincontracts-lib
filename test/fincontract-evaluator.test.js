@@ -7,15 +7,15 @@ import Currency from '../src/currency';
 import Evaluator from '../src/fincontract-evaluator';
 import * as finc from '../src/fincontract';
 
-describe('Evaluator', () => {
+describe('Evaluator', function() {
   let evaluator;
 
-  beforeEach(() => {
+  beforeEach(function() {
     evaluator = new Evaluator(null, null);
   });
 
   describe('#evaluate()', () => {
-    it(`should correctly evaluate Fincontract's description with FincZeroNode`, () => {
+    it(`should correctly evaluate Fincontract's description with FincZeroNode`, function() {
       const description = new finc.FincZeroNode();
       const method = 'estimate';
       const evaluated = evaluator.evaluate(description, {method});
@@ -26,7 +26,7 @@ describe('Evaluator', () => {
       ]);
     });
 
-    it(`should correctly evaluate complex Fincontract's description`, () => {
+    it(`should correctly evaluate complex Fincontract's description`, function() {
       const eur = Currency.getCurrencyIndex('EUR');
       const usd = Currency.getCurrencyIndex('USD');
       const one1 = new finc.FincOneNode(usd);
@@ -44,7 +44,7 @@ describe('Evaluator', () => {
       ]);
     });
 
-    it(`should throw upon wrong evaluation method`, () => {
+    it(`should throw upon wrong evaluation method`, function() {
       const method = 'WRONGMETHOD';
       const err = 'Wrong evaluation method';
       return evaluator.evaluate(null, {method}).should.be.rejectedWith(Error, err);

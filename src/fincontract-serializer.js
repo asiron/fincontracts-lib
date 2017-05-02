@@ -23,7 +23,7 @@ export class SerializerVisitor extends Visitor {
    *   subtrees
    */
   processAndNode(node, left, right) {
-    return 'And(' + left + ',' + right + ')';
+    return `And(${left},${right})`;
   }
 
   /**
@@ -40,8 +40,7 @@ export class SerializerVisitor extends Visitor {
    *   subtrees
    */
   processIfNode(node, left, right) {
-    return 'If(' + compressZero(node.gatewayAddress) + ',' +
-      left + ',' + right + ')';
+    return `If(${compressZero(node.gatewayAddress)},${left},${right})`;
   }
 
   /**
@@ -57,7 +56,7 @@ export class SerializerVisitor extends Visitor {
    *   subtrees
    */
   processOrNode(node, left, right) {
-    return 'Or(' + left + ',' + right + ')';
+    return `Or(${left},${right})`;
   }
 
   /**
@@ -70,8 +69,7 @@ export class SerializerVisitor extends Visitor {
    * @return {String} a String that serializes the current node and its subtree
    */
   processTimeboundNode(node, child) {
-    return 'Timebound(' + node.lowerBound + ',' +
-      node.upperBound + ',' + child + ')';
+    return `Timebound(${node.lowerBound},${node.upperBound},${child})`;
   }
 
   /**
@@ -84,7 +82,7 @@ export class SerializerVisitor extends Visitor {
    * @return {String} a String that serializes the current node and its subtree
    */
   processGiveNode(node, child) {
-    return 'Give(' + child + ')';
+    return `Give(${child})`;
   }
 
   /**
@@ -98,7 +96,7 @@ export class SerializerVisitor extends Visitor {
    * @return {String} a String that serializes the current node and its subtree
    */
   processScaleObsNode(node, child) {
-    return 'ScaleObs(' + compressZero(node.gatewayAddress) + ',' + child + ')';
+    return `ScaleObs(${compressZero(node.gatewayAddress)},${child})`;
   }
 
   /**
@@ -111,7 +109,7 @@ export class SerializerVisitor extends Visitor {
    * @return {String} a String that serializes the current node and its subtree
    */
   processScaleNode(node, child) {
-    return 'Scale(' + node.scale + ',' + child + ')';
+    return `Scale(${node.scale},${child})`;
   }
 
   /**
@@ -122,7 +120,7 @@ export class SerializerVisitor extends Visitor {
    * @return {String} a String that serializes the current node.
    */
   processOneNode(node) {
-    return 'One(' + Currency.Currencies[node.currency] + ')';
+    return `One(${Currency.Currencies[node.currency]})`;
   }
 
   /**
@@ -132,7 +130,7 @@ export class SerializerVisitor extends Visitor {
    * @return {String} a String that serializes the current node.
    */
   processZeroNode() {
-    return 'Zero()';
+    return `Zero()`;
   }
 
   /**
@@ -169,7 +167,7 @@ export default class Serializer {
   }
 
   /**
-   * Serializes a Fincontract {@link Fincontract} to a plain-old Java Script
+   * Serializes a {@link Fincontract} to a plain-old Java Script
    * object that can be easily converted to JSON, by calling `JSON.stringify`.
    * All address are compressed, meaning a zero address is compressed to `0x0`
    * @param  {Fincontract} fincontract a Fincontract instance

@@ -52,7 +52,7 @@ const tupleMUL = i => i[0] * i[1];
  * <ul>
  *  <li>`if`  : interval arithmetic union</li>
  *  <li>`or`  : interval arithmetic union</li>
- *  <li>`an`d : interval arithmetic addition</li>
+ *  <li>`and` : interval arithmetic addition</li>
  *  <li>`give`  : interval arithmetic negation</li>
  *  <li>`scale`  : interval arithmetic scalar mulitplication with scale</li>
  *  <li>`scaleObs`  : interval arithmetic multiplication with estimate scale interval</li>

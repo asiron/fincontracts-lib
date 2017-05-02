@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.GatewayUpdater = exports.Serializer = exports.vis = exports.Fetcher = exports.Executor = exports.Examples = exports.makeDirectEvaluators = exports.makeEstimationEvaluators = exports.Evaluator = exports.Deployer = exports.Parser = exports.finc = exports.Transaction = exports.Sender = exports.Currency = undefined;
+exports.DotGenerator = exports.GatewayUpdater = exports.Serializer = exports.vis = exports.Fetcher = exports.Executor = exports.Examples = exports.makeDirectEvaluators = exports.makeEstimationEvaluators = exports.Evaluator = exports.Deployer = exports.Parser = exports.finc = exports.Transaction = exports.Sender = exports.Currency = undefined;
 
 var _currency = require('./currency');
 
@@ -53,6 +53,10 @@ var _fincontractGatewayUpdater = require('./fincontract-gateway-updater');
 
 var _fincontractGatewayUpdater2 = _interopRequireDefault(_fincontractGatewayUpdater);
 
+var _fincontractDotGenerator = require('./fincontract-dot-generator');
+
+var _fincontractDotGenerator2 = _interopRequireDefault(_fincontractDotGenerator);
+
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -72,3 +76,4 @@ exports.Fetcher = _fincontractFetcher2.default;
 exports.vis = vis;
 exports.Serializer = _fincontractSerializer2.default;
 exports.GatewayUpdater = _fincontractGatewayUpdater2.default;
+exports.DotGenerator = _fincontractDotGenerator2.default;

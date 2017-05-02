@@ -170,12 +170,18 @@ class Parser {
     }
   }
 
+  /**
+   * Parses scale from an AST node. Negative scales have to be
+   * processed further since `math.js` interprets e.g. `-4` as operation.
+   * @param  {Object} node - current AST node containing an integer scale factor
+   * @return {String} address - parsed integer scale factor as String
+   */
   parseScale(node) {
     return parseInt(node.args[0].value || -node.args[0].args[0], 10);
   }
 
   /**
-   * Parses address from a AST node. Address in form `0x....` has to be
+   * Parses address from an AST node. Address in form `0x....` has to be
    * processed further since `math.js` interprets `0x...` as multiplication.
    * @param  {Object} node - current AST node containing address
    * @return {String} address - parsed address as String

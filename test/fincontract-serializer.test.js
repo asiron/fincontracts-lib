@@ -7,15 +7,15 @@ import Currency from '../src/currency';
 import Serializer from '../src/fincontract-serializer';
 import * as finc from '../src/fincontract';
 
-describe('Serializer', () => {
+describe('Serializer', function() {
   let serializer;
 
-  beforeEach(() => {
+  beforeEach(function() {
     serializer = new Serializer();
   });
 
-  describe('#serialize()', () => {
-    it('should correctly serialize Fincontract with FincZeroNode', () => {
+  describe('#serialize()', function() {
+    it('should correctly serialize Fincontract with FincZeroNode', function() {
       const zero = new finc.FincZeroNode();
       const fincontract = new finc.Fincontract({
         id: '0x000000000000',
@@ -32,13 +32,12 @@ describe('Serializer', () => {
       serialized.should.have.property('description').which.is.equal('Zero()');
     });
 
-    it('should correctly serialize Fincontract with complex Fincontract', () => {
-      const zero1 = new finc.FincZeroNode();
-
+    it('should correctly serialize Fincontract with complex Fincontract', function() {
       const eur = Currency.getCurrencyIndex('EUR');
       const usd = Currency.getCurrencyIndex('USD');
       const cny = Currency.getCurrencyIndex('CNY');
-
+      
+      const zero1 = new finc.FincZeroNode();
       const one1 = new finc.FincOneNode(eur);
       const one2 = new finc.FincOneNode(usd);
       const one3 = new finc.FincOneNode(cny);
