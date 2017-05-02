@@ -54,7 +54,7 @@ export class Fincontract {
  * pointers to children. The number of children varies from `0` to `2` depending
  * on the inheriting node type.
  * <ul>
- *   <li> 2 children - {@link FincNode.children} is an {@link Array} 
+ *   <li> 2 children - {@link FincNode.children} is an {@link Array}
  *     of {@link FincNode} </li>
  *   <li> 1 child - {@link FincNode.children} is a {@link FincNode} </li>
  *   <li> no children - {@link FincNode.children} is {@link null} </li>
@@ -66,12 +66,12 @@ export class FincNode {
   /**
    * Constructs {@link FincNode} with an Array of children or a single child
    * reference
-   * @param  {Array<FincNode>|FincNode|null} children - an Array of 
+   * @param  {Array<FincNode>|FincNode|null} children - an Array of
    *   children or a single child reference
    */
   constructor(children) {
     /**
-     * References to children, can be an {@link Array} of {@link FincNode}, 
+     * References to children, can be an {@link Array} of {@link FincNode},
      *   a {@link FincNode} or simply {@link null}.
      * @type {Array<FincNode>|FincNode|null}
      */
