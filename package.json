@@ -8,9 +8,11 @@
     "init": "mkdir dist",
     "clean": "rm -rf dist",
     "prebuild": "npm run clean && npm run init",
+    "prebuild": "npm run test",
     "build": "babel ./src -d ./dist",
     "publish": "npm run build",
-    "test": "xo",
+    "test": "npm run lint && mocha --compilers js:babel-core/register ./test/**/*.test.js",
+    "lint": "xo --ignore test/**/*.test.js",
     "docs": "esdoc"
   },
   "repository": {
@@ -32,7 +34,10 @@
   "devDependencies": {
     "babel-cli": "^6.0.0",
     "babel-preset-env": "^1.4.0",
+    "chai": "^3.5.0",
+    "chai-as-promised": "^6.0.0",
     "esdoc": "^0.5.2",
+    "mocha": "^3.3.0",
     "xo": "^0.18.1"
   },
   "dependencies": {

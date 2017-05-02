@@ -53,15 +53,28 @@ export class Fincontract {
  * {@link FincNode} is the superclass for all primitives. It contains a list of
  * pointers to children. The number of children varies from `0` to `2` depending
  * on the inheriting node type.
+ * <ul>
+ *   <li> 2 children - {@link FincNode.children} is an {@link Array} 
+ *     of {@link FincNode} </li>
+ *   <li> 1 child - {@link FincNode.children} is a {@link FincNode} </li>
+ *   <li> no children - {@link FincNode.children} is {@link null} </li>
+ * </ul>
  * @abstract
  */
 export class FincNode {
+
   /**
-   * Constructs {@link FincNode} with an Array of children
-   * @param  {Array<FincNode>} children - an Array of children
+   * Constructs {@link FincNode} with an Array of children or a single child
+   * reference
+   * @param  {Array<FincNode>|FincNode|null} children - an Array of 
+   *   children or a single child reference
    */
   constructor(children) {
-    /** @private */
+    /**
+     * References to children, can be an {@link Array} of {@link FincNode}, 
+     *   a {@link FincNode} or simply {@link null}.
+     * @type {Array<FincNode>|FincNode|null}
+     */
     this.children = children;
   }
 }
@@ -76,6 +89,10 @@ export class FincNode {
 export class FincTimeboundNode extends FincNode {
 
   /**
+   * Constructs {@link FincTimeboundNode} with a child and two timestamps:
+   * lowerBound (the beginning of Fincontract validity period) and upperBound
+   * (the end of Fincontract validity period)
+   *
    * @param  {FincNode} child - a sub-fincontract to be embedded inside
    *   {@link FincTimeboundNode}
    * @param  {Number} lowerBound - lower bound as Unix timestamp in seconds
@@ -172,6 +189,8 @@ export class FincIfNode extends FincNode {
 export class FincScaleObsNode extends FincNode {
 
   /**
+   *
+   * Constructs {@link FincScaleObsNode} with a child and a Gateway address.
    * @param  {FincNode} child - a sub-fincontract to be embedded inside
    *   {@link FincScaleObsNode}
    * @param  {String} gatewayAddress - 32-byte address of the blockchain
@@ -197,9 +216,10 @@ export class FincScaleObsNode extends FincNode {
 export class FincScaleNode extends FincNode {
 
   /**
+   * Constructs {@link FincScaleNode} with a child and an integer scale factor.
    * @param  {FincNode} child - a sub-fincontract to be embedded inside
    *   {@link FincScaleNode}
-   * @param  {Number} scale - integer scale factor
+   * @param  {Number} scale - an integer scale factor
    */
   constructor(child, scale) {
     super(child);
@@ -220,6 +240,7 @@ export class FincScaleNode extends FincNode {
 export class FincOneNode extends FincNode {
 
   /**
+   * Constructs {@link FincOneNode} with a currency index
    * @param  {Number} currency - a currency index
    */
   constructor(currency) {
@@ -245,4 +266,10 @@ export class FincGiveNode extends FincNode {}
  * obligations.
  * @extends {FincNode}
  */
-export class FincZeroNode extends FincNode {}
+export class FincZeroNode extends FincNode {
+
+  /** Constructs {@link FincZeroNode} */
+  constructor() {
+    super(null);
+  }
+}

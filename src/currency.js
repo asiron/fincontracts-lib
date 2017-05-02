@@ -50,11 +50,16 @@ export default class Currency {
 
   /**
    * Given a currency name in ISO 4217, return its index from {@link Currencies}
+   * @throws {Error} If currency is not defined
    * @param  {String} currency name in ISO 4217
    * @return {Number} index from {@link Currencies}
    */
   static getCurrencyIndex(currency) {
-    return getKey(Currency.Currencies, currency);
+    const key = getKey(Currency.Currencies, currency);
+    if (!key) {
+      throw new Error('Currency not defined!');
+    }
+    return parseInt(key, 10);
   }
 
   /**

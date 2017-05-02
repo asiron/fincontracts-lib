@@ -156,11 +156,11 @@ class Parser {
       case 'Scale':
         {
           const child = this.visit(node.args[1]);
-          return new finc.FincScaleNode(child, node.args[0].value);
+          return new finc.FincScaleNode(child, this.parseScale(node));
         }
 
       case 'One':
-        return new finc.FincOneNode(_currency2.default.getCurrencyIndex(node.args[0].name));
+        return new finc.FincOneNode(parseInt(_currency2.default.getCurrencyIndex(node.args[0].name), 10));
 
       case 'Zero':
         return new finc.FincZeroNode();
@@ -170,6 +170,10 @@ class Parser {
     }
   }
 
+  parseScale(node) {
+    return parseInt(node.args[0].value || -node.args[0].args[0], 10);
+  }
+
   /**
    * Parses address from a AST node. Address in form `0x....` has to be
    * processed further since `math.js` interprets `0x...` as multiplication.
@@ -177,7 +181,8 @@ class Parser {
    * @return {String} address - parsed address as String
    */
   parseAddress(node) {
-    return '0x' + (node.args[0].value || node.args[0].args[1].name.slice(1));
+    const address = '0x' + (node.args[0].value || node.args[0].args[1].name.slice(1));
+    return parseInt(address, 16) ? address : '0x0';
   }
 }
 exports.default = Parser;
