@@ -23,7 +23,7 @@ In order to use most of the functionality of **fincontracts-lib**, you will need
   * an interface/class of [Gateway](https://bitbucket.org/s-tikhomirov/fincontracts.git) smart contract, which couldn't be deployed to the blockchain as its an abstract smart contract, but must be instantiated on demand with a given **Gateway** address during Fincontract processing, such as [execution](#Executor)
 
 ## Documentation
-Documentation is hosted [here](https://doc.esdoc.org/github.com/Asiron/fincontracts-lib/) 
+Documentation is hosted [here](https://doc.esdoc.org/github.com/asiron/fincontracts-lib/) 
 thanks to ESDoc!
 Alternatively, you can clone this repo and build documentation locally. If you wish to do so, run:
 ```
