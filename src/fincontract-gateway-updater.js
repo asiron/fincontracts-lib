@@ -4,6 +4,8 @@ import Sender from './tx-sender';
 const log = require('minilog')('gateway-updater');
 require('minilog').enable();
 
+const short = hash => hash.substring(0, 6);
+
 /**
  * {@link GatewayVisitor} performs the actual Gateway update by traversing
  * the {@link FincNode} description tree. It extends {@link CollectingVisitor},
@@ -46,7 +48,7 @@ export class GatewayVisitor extends CollectingVisitor {
     return new Sender(gw, this.web3)
       .send('update', [])
       .watch({block: 'latest'}, () => {
-        log.info('Finished updating ' + type + ' gateway at: ' + address);
+        log.info(`Finished updating ${type} gateway at: ${short(address)}`);
       });
   }
 

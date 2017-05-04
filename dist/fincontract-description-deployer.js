@@ -15,6 +15,8 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 const log = require('minilog')('desc-deploy');
 require('minilog').enable();
 
+const short = hash => hash.substring(0, 6);
+
 /**
  * Deploys a Fincontract description to the blockchain by traversing
  * the {@link FincNode} tree in preorder fashion to ensure topological ordering.
@@ -60,7 +62,7 @@ class DescriptionDeployer extends _fincontractVisitor.Visitor {
   deployPrimitive(name, args) {
     return this.sender.send(name, args).watch({ event: 'PrimitiveStoredAt' }, logs => {
       const primitiveId = logs.args.id;
-      log.info(name + ' primitive ID: ' + primitiveId);
+      log.info(`${name} primitive stored with ID: ${short(primitiveId)}`);
       return primitiveId;
     });
   }

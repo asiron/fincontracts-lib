@@ -4,6 +4,8 @@ import {Visitor} from './fincontract-visitor';
 const log = require('minilog')('desc-deploy');
 require('minilog').enable();
 
+const short = hash => hash.substring(0, 6);
+
 /**
  * Deploys a Fincontract description to the blockchain by traversing
  * the {@link FincNode} tree in preorder fashion to ensure topological ordering.
@@ -51,7 +53,7 @@ export default class DescriptionDeployer extends Visitor {
       .send(name, args)
       .watch({event: 'PrimitiveStoredAt'}, logs => {
         const primitiveId = logs.args.id;
-        log.info(name + ' primitive ID: ' + primitiveId);
+        log.info(`${name} primitive stored with ID: ${short(primitiveId)}`);
         return primitiveId;
       });
   }

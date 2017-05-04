@@ -3,6 +3,8 @@ import Sender from './tx-sender';
 const log = require('minilog')('example');
 require('minilog').enable();
 
+const short = hash => hash.substring(0, 6);
+
 /**
  * Examples class is meant to deploy some of the tests defined in
  * {@link FincontractMarketplace} as well as assign Gateways to global values.
@@ -79,9 +81,9 @@ export default class Examples {
    */
   setGateways(gwint, gwbool) {
     const p1 = this.deploy('setGatewayI', [gwint],
-      {block: 'latest'}, () => log.info(`gatewayI set to ${gwint}`));
+      {block: 'latest'}, () => log.info(`gatewayI set to ${short(gwint)}`));
     const p2 = this.deploy('setGatewayB', [gwbool],
-      {block: 'latest'}, () => log.info(`gatewayB set to ${gwbool}`));
+      {block: 'latest'}, () => log.info(`gatewayB set to ${short(gwbool)}`));
     return Promise.all([p1, p2]);
   }
 
@@ -98,8 +100,8 @@ export default class Examples {
     return this.deploy(name, args, {event: 'CreatedBy'}, logs => {
       const fctID = logs.args.fctId;
       const owner = logs.args.user;
-      log.info(`Fincontract: ${fctID}`);
-      log.info(`Created for: ${owner}`);
+      log.info(`Fincontract: ${short(fctID)}`);
+      log.info(`Created for: ${short(owner)}`);
       return fctID;
     });
   }

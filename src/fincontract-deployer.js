@@ -4,6 +4,8 @@ import Sender from './tx-sender';
 const log = require('minilog')('deploy');
 require('minilog').enable();
 
+const short = hash => hash.substring(0, 6);
+
 /** @external {Web3} https://github.com/ethereum/wiki/wiki/JavaScript-API */
 /** @external {FincontractMarketplace} https://bitbucket.org/s-tikhomirov/fincontracts.git */
 /** @external {Gateway} https://bitbucket.org/s-tikhomirov/fincontracts.git */
@@ -79,8 +81,8 @@ export default class Deployer {
       .watch({event: 'CreatedBy'}, logs => {
         const fctID = logs.args.fctId;
         const owner = logs.args.user;
-        log.info('Fincontract: ' + fctID);
-        log.info('Created for: ' + owner);
+        log.info(`Fincontract: ${short(fctID)}`);
+        log.info(`Created for: ${short(owner)}`);
         return fctID;
       });
   }
@@ -100,8 +102,8 @@ export default class Deployer {
       .watch({event: 'IssuedFor'}, logs => {
         const fctID = logs.args.fctId;
         const proposedOwner = logs.args.proposedOwner;
-        log.info('Fincontract: ' + fctID);
-        log.info('Issued for: ' + proposedOwner);
+        log.info(`Fincontract: ${short(fctID)}`);
+        log.info(`Issued for:  ${short(proposedOwner)}`);
         return fctID;
       });
   }

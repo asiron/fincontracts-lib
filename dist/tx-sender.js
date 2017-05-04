@@ -6,6 +6,8 @@ Object.defineProperty(exports, "__esModule", {
 const log = require('minilog')('sender');
 require('minilog').enable();
 
+const short = hash => hash.substring(0, 6);
+
 const wasTransactionIncluded = (web3, blockHash, tx) => {
   return web3.eth.getBlock(blockHash).transactions.includes(tx);
 };
@@ -137,9 +139,9 @@ class Sender {
           reject(`${err} at transaction '${name}' with args: ${args}`);
           return;
         }
-        log.info(`${name} transaction was sent. HASH: ${tx}`);
+        log.info(`${name} transaction was sent. HASH: ${short(tx)}`);
         if (!this.web3.eth.getTransaction(tx)) {
-          log.warn(`Transaction was lost! HASH: ${tx}`);
+          log.warn(`Transaction was lost! HASH: ${short(tx)}`);
           return executor(resolve, reject);
         }
         resolve(tx);
