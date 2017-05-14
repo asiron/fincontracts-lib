@@ -1,7 +1,7 @@
 const log = require('minilog')('sender');
 require('minilog').enable();
 
-const short = hash => hash.substring(0, 8);
+const short = hash => hash.substring(0, 12);
 
 const wasTransactionIncluded = (web3, blockHash, tx) => {
   return web3.eth.getBlock(blockHash).transactions.includes(tx);
@@ -94,6 +94,16 @@ export class Transaction {
 export default class Sender {
 
   /**
+   * Strange error sometimes appearing,
+   * when sending a transaction
+   * https://github.com/ethereum/go-ethereum/issues/662
+   * @private
+   */
+  static get KnownTxError() {
+    return 'known transaction:';
+  }
+
+  /**
    * Maximum Gas to be spent in an Ethereum transaction
    * @type {Number}
    */
@@ -129,6 +139,10 @@ export default class Sender {
     const executor = (resolve, reject) => {
       const method = this.contract[name];
       method.sendTransaction(...args, {gas: Sender.GasLimit}, (err, tx) => {
+        if (err && err.substring(0, 18) === Sender.KnownTxError) {
+          log.warn(`Transaction wasn't sent! HASH: ${short(tx)}`);
+          return executor(resolve, reject);
+        }
         if (err) {
           reject(`${err} at transaction '${name}' with args: ${args}`);
           return;

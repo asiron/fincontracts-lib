@@ -2,8 +2,11 @@
 Copyright (C) 2017 - Maciej Żurad, University of Luxembourg
 
 Node.js package for interacting with Fincontracts deployed on the Ethereum blockchain.
-For more information about Fincontracts see the paper:
-[Findel: Secure Derivative Contracts for Ethereum](https://orbilu.uni.lu/handle/10993/30975). For the Smart Contract implementation in Ethereum, see: https://github.com/cryptolu/findel
+
+  - For more information about Fincontracts see the paper:
+[Findel: Secure Derivative Contracts for Ethereum](https://orbilu.uni.lu/handle/10993/30975). 
+  - For the Smart Contract implementation in Ethereum, see: https://github.com/cryptolu/findel
+  - An example project implementing a CLI using this package is hosted at: https://github.com/asiron/fincontracts-cli
 
 ## Installation
 

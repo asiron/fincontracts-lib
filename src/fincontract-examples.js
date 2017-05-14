@@ -3,7 +3,7 @@ import Sender from './tx-sender';
 const log = require('minilog')('example');
 require('minilog').enable();
 
-const short = hash => hash.substring(0, 8);
+const short = hash => hash.substring(0, 12);
 
 /**
  * Examples class is meant to deploy some of the tests defined in

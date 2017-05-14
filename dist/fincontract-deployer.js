@@ -17,7 +17,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 const log = require('minilog')('deploy');
 require('minilog').enable();
 
-const short = hash => hash.substring(0, 8);
+const short = hash => hash.substring(0, 12);
 
 /** @external {Web3} https://github.com/ethereum/wiki/wiki/JavaScript-API */
 /** @external {FincontractMarketplace} https://github.com/cryptolu/findel */

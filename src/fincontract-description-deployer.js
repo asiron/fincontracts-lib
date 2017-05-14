@@ -4,7 +4,7 @@ import {Visitor} from './fincontract-visitor';
 const log = require('minilog')('desc-deploy');
 require('minilog').enable();
 
-const short = hash => hash.substring(0, 8);
+const short = hash => hash.substring(0, 12);
 
 /**
  * Deploys a Fincontract description to the blockchain by traversing
