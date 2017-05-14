@@ -7,7 +7,7 @@ const pullCurrencyExchangeRates = base =>
 
 /**
  * Currencies as defined in:
- * {@link https://bitbucket.org/s-tikhomirov/fincontracts.git}
+ * {@link https://github.com/cryptolu/findel}
  *
  * @typedef {Object} CurrenciesType
  * @property {Number} 0 USD (US Dollar)

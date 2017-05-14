@@ -4,11 +4,11 @@ import Sender from './tx-sender';
 const log = require('minilog')('deploy');
 require('minilog').enable();
 
-const short = hash => hash.substring(0, 6);
+const short = hash => hash.substring(0, 8);
 
 /** @external {Web3} https://github.com/ethereum/wiki/wiki/JavaScript-API */
-/** @external {FincontractMarketplace} https://bitbucket.org/s-tikhomirov/fincontracts.git */
-/** @external {Gateway} https://bitbucket.org/s-tikhomirov/fincontracts.git */
+/** @external {FincontractMarketplace} https://github.com/cryptolu/findel */
+/** @external {Gateway} https://github.com/cryptolu/findel */
 
 /**
  * Deployer allows for deployment of {@link Fincontract} to the blockchain in

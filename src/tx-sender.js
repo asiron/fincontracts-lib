@@ -1,7 +1,7 @@
 const log = require('minilog')('sender');
 require('minilog').enable();
 
-const short = hash => hash.substring(0, 6);
+const short = hash => hash.substring(0, 8);
 
 const wasTransactionIncluded = (web3, blockHash, tx) => {
   return web3.eth.getBlock(blockHash).transactions.includes(tx);

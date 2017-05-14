@@ -4,7 +4,7 @@ import Sender from './tx-sender';
 const log = require('minilog')('gateway-updater');
 require('minilog').enable();
 
-const short = hash => hash.substring(0, 6);
+const short = hash => hash.substring(0, 8);
 
 /**
  * {@link GatewayVisitor} performs the actual Gateway update by traversing
