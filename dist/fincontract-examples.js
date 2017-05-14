@@ -13,7 +13,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 const log = require('minilog')('example');
 require('minilog').enable();
 
-const short = hash => hash.substring(0, 6);
+const short = hash => hash.substring(0, 8);
 
 /**
  * Examples class is meant to deploy some of the tests defined in

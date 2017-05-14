@@ -15,7 +15,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 const log = require('minilog')('desc-deploy');
 require('minilog').enable();
 
-const short = hash => hash.substring(0, 6);
+const short = hash => hash.substring(0, 8);
 
 /**
  * Deploys a Fincontract description to the blockchain by traversing

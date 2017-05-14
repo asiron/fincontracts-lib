@@ -4,7 +4,6 @@
   "description": "Node.js package for interacting with Fincontracts deployed on the Ethereum blockchain",
   "main": "./dist/index.js",
   "scripts": {
-    "start": "npm run dev",
     "init": "mkdir dist",
     "clean": "rm -rf dist",
     "prebuild": "npm run clean && npm run init",

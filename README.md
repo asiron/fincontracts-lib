@@ -2,11 +2,13 @@
 Copyright (C) 2017 - Maciej Żurad, University of Luxembourg
 
 Node.js package for interacting with Fincontracts deployed on the Ethereum blockchain.
+For more information about Fincontracts see the paper:
+[Findel: Secure Derivative Contracts for Ethereum](https://orbilu.uni.lu/handle/10993/30975). For the Smart Contract implementation in Ethereum, see: https://github.com/cryptolu/findel
 
 ## Installation
 
 Run this command in your project's root directory to install the package.
-```bash
+```shell
 npm install --save fincontracts-lib
 ```
 
@@ -26,7 +28,7 @@ In order to use most of the functionality of **fincontracts-lib**, you will need
 Documentation is hosted [here](https://doc.esdoc.org/github.com/asiron/fincontracts-lib/) 
 thanks to ESDoc!
 Alternatively, you can clone this repo and build documentation locally. If you wish to do so, run:
-```bash
+```shell
 npm run docs
 ```
 Now, you can simply navigate to `docs/index.html` and browse the documentation.

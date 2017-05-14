@@ -11,7 +11,7 @@ const pullCurrencyExchangeRates = base => rp({ uri: `${URL}?base=${base}`, json:
 
 /**
  * Currencies as defined in:
- * {@link https://bitbucket.org/s-tikhomirov/fincontracts.git}
+ * {@link https://github.com/cryptolu/findel}
  *
  * @typedef {Object} CurrenciesType
  * @property {Number} 0 USD (US Dollar)
