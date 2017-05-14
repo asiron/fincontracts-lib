@@ -6,12 +6,12 @@ Node.js package for interacting with Fincontracts deployed on the Ethereum block
 ## Installation
 
 Run this command in your project's root directory to install the package.
-```
+```bash
 npm install --save fincontracts-lib
 ```
 
 You can now import the package using:
-```
+```javascript
 const finlib = require('fincontracts-lib');
 ```
 
@@ -26,7 +26,7 @@ In order to use most of the functionality of **fincontracts-lib**, you will need
 Documentation is hosted [here](https://doc.esdoc.org/github.com/asiron/fincontracts-lib/) 
 thanks to ESDoc!
 Alternatively, you can clone this repo and build documentation locally. If you wish to do so, run:
-```
+```bash
 npm run docs
 ```
 Now, you can simply navigate to `docs/index.html` and browse the documentation.
@@ -52,7 +52,7 @@ Everytime, we refer to these variables, we mean:
 **Deployer** allows for Fincontract deployment and issuence. Following example
 deploys the Fincontract and issues it to everyone.
 
-```
+```javascript
 const finlib = require('./fincontracts-lib');
 try {
   const d = new finlib.Deployer(marketplace, web3);
@@ -68,7 +68,7 @@ catch (err) {
 The following example first pulls the Fincontract from the blockchain and then
 evaluates it using `estimate` method and converts all currencies to `USD`
 
-```
+```javascript
 const finlib = require('./fincontracts-lib');
 const f = new finlib.Fetcher(marketplace);
 const e = new finlib.Evaluator(web3, gateway);
@@ -93,7 +93,7 @@ It also allows for choosing a sub-fincontract if the top-level node is an OR nod
 For more details, consult the documentation ( `Executor#choose` )
 The following example joins the Fincontract if possible.
 
-```
+```javascript
 const finlib = require('./fincontracts-lib');
 const exec = new finlib.Executor(marketplace, gateway, web3);
 const id = '<32 byte address of a deployed Fincontract>';
@@ -110,7 +110,7 @@ try {
 **Parser** can parse a String and return a Fincontract description, which then
 can be [evaluated](#Evaluator) or [deployed](#Deployer).
 
-```
+```javascript
 const finlib = require('./fincontracts-lib');
 try {
   const p = new finlib.Parser();
@@ -128,7 +128,7 @@ all properties: `owner`, `issuer` and the `proposedOwner` as well as serializes
 the Fincontract's description tree into String, which can be easily 
 [parsed](#Parser)
 
-```
+```javascript
 const finlib = require('./fincontracts-lib');
 const srz = new finlib.Serializer();
 const serialized = srz.serialize(fincontract);
@@ -140,7 +140,7 @@ console.log(JSON.stringify(serialized));
 **DotGenerator** can take a Fincontract and generate a graph description in
 DOT language, that can be piped into any DOT engine, which supports HTML labels.
 
-```
+```javascript
 const finlib = require('./fincontracts-dot-generator');
 const dg = new finlib.DotGenerator();
 const dot = dg.generate(fincontract);
