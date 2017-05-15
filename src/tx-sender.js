@@ -138,14 +138,13 @@ export default class Sender {
   send(name, args) {
     const executor = (resolve, reject) => {
       const method = this.contract[name];
-      method.sendTransaction(...args, {gas: Sender.GasLimit}, (err, tx) => {        
-        if (err && err.message.substring(0, 18) === Sender.KnownTxError) {
-          log.warn(`Transaction wasn't sent! HASH: ${short(tx)}`);
-          return executor(resolve, reject);
-        }
+      method.sendTransaction(...args, {gas: Sender.GasLimit}, (err, tx) => {
         if (err) {
-          console.log(err.code);
-          console.log(err.message);
+          console.log('err msg->' + err.message);
+          if (err.message.substring(0, 18) === Sender.KnownTxError) {
+            log.error(`Transaction wasn't sent! HASH: ${short(tx)}`);
+            return executor(resolve, reject);
+          }
           reject(`${err} at transaction '${name}' with args: ${args}`);
           return;
         }

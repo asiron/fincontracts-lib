@@ -1,6 +1,6 @@
 {
   "name": "fincontracts-lib",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "description": "Node.js package for interacting with Fincontracts deployed on the Ethereum blockchain",
   "main": "./dist/index.js",
   "scripts": {
